@@ -13,7 +13,7 @@ if ! command -v git &> /dev/null; then
 fi
 
 echo "[1/2] Đang tải mã nguồn mới nhất..."
-git pull || git pull origin master
+git pull || git pull origin main
 
 echo ""
 echo "[2/2] Đang kiểm tra thư viện Python..."

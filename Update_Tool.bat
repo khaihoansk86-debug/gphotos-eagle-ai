@@ -20,8 +20,8 @@ echo [1/2] Đang tải mã nguồn mới nhất về...
 git pull
 if %errorlevel% neq 0 (
     echo.
-    echo ⚠️ Có cảnh báo trong quá trình git pull. Đang thử lại với remote origin...
-    git pull origin master
+    echo ⚠️ Đang thử lại với nhánh main...
+    git pull origin main
 )
 
 echo.
