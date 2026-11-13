@@ -4,8 +4,12 @@ import json
 import glob
 import time
 import urllib.request
+from typing import Optional
 from taxonomy_manager import TaxonomyManager
 from vision_enricher import VisionEnricher
+from quality_scorer import QualityScorer
+from journey_classifier import JourneyClassifier
+from tool_detector import ToolDetector
 
 LIBRARY_PATH = r"D:\test.library"
 IMAGES_DIR = os.path.join(LIBRARY_PATH, "images")
@@ -21,7 +25,6 @@ FOLDERS = {
 }
 
 # Mapping date sessions to Customer Folders and Customer Tags
-# Customer folder IDs from Eagle:
 CUSTOMER_MAP = {
     "12 thg 11, 2026": {
         "name": "Thu Lee - 0967033270",
@@ -125,91 +128,157 @@ CUSTOMER_MAP = {
     }
 }
 
+
 def run(library_path: str = None):
     lib_path = library_path or LIBRARY_PATH
     images_dir = os.path.join(lib_path, "images")
-    print(f"🚀 Bắt đầu gán phân loại Thư mục Khách Hàng & Làm giàu ngữ cảnh Vision trên {lib_path}...")
+    print(f"🚀 Bắt đầu làm giàu chuyên sâu: 1-5 Sao Quality, Tiến Trình Before/After & Công Cụ Y Khoa trên {lib_path}...")
     tax_mgr = TaxonomyManager()
+    active_proj = tax_mgr.get_active_project()
+    domain = active_proj.get("domain", "dermatology_spa")
     enricher = VisionEnricher(tax_mgr)
-    
+
     info_dirs = glob.glob(os.path.join(images_dir, "*.info"))
     print(f"Tổng số tư liệu cần xử lý: {len(info_dirs)}")
-    
-    updated_items = {}
-    now_ms = int(time.time() * 1000)
-    customer_counts = {}
-    
-    for idx, d in enumerate(info_dirs, 1):
+
+    # 1. Group info dirs by customer/session date
+    session_groups = {}
+    for d in info_dirs:
         item_id = os.path.basename(d).replace(".info", "")
         item_meta_file = os.path.join(d, "metadata.json")
         if not os.path.exists(item_meta_file):
             continue
-            
-        with open(item_meta_file, "r", encoding="utf-8") as f:
-            meta = json.load(f)
-            
-        name = meta.get("name", "")
-        
-        # Match with Customer based on session date
-        matched_cust = None
-        for date_str, cinfo in CUSTOMER_MAP.items():
-            if date_str in name:
-                matched_cust = cinfo
-                break
-
-        # Generate Vision & Marketing Brief
-        brief = enricher.generate_brief(
-            asset_label=name,
-            kind="video" if "video" in name.lower() or meta.get("ext") == "mp4" else "photo",
-            customer_name=matched_cust["name"] if matched_cust else None,
-            photo_url=meta.get("url")
-        )
-        
-        main_fid = FOLDERS.get(brief["pillar_id"], FOLDERS["treatment"])
-        folders = [main_fid]
-        
-        # Merge tags
-        current_tags = set(meta.get("tags", []))
-        for t in brief["tags"]:
-            current_tags.add(t)
-
-        if matched_cust:
-            folders.append(matched_cust["folder_id"])
-            current_tags.add(matched_cust["tag"])
-            customer_counts[matched_cust["name"]] = customer_counts.get(matched_cust["name"], 0) + 1
-
-        tags = sorted(list(current_tags))
-        anno = brief["annotation"]
-        clean_title = brief["title"]
-        
-        meta["name"] = clean_title
-        meta["folders"] = folders
-        meta["tags"] = tags
-        meta["annotation"] = anno
-        meta["modificationTime"] = now_ms
-        meta["lastModified"] = now_ms
-        
-        # 1. Save metadata on disk
-        with open(item_meta_file, "w", encoding="utf-8") as f:
-            json.dump(meta, f, ensure_ascii=False, indent=2)
-            
-        updated_items[item_id] = meta
-        
-        # 2. Update Eagle in-memory tags & annotation via API
         try:
-            payload = json.dumps({
-                "id": item_id,
-                "tags": tags,
-                "annotation": anno
-            }).encode("utf-8")
-            req = urllib.request.Request("http://localhost:41595/api/item/update", data=payload, headers={"Content-Type": "application/json"}, method="POST")
-            urllib.request.urlopen(req, timeout=3)
-        except Exception:
-            pass
+            with open(item_meta_file, "r", encoding="utf-8") as f:
+                meta = json.load(f)
 
-    print(f"\n✅ Đã phân loại {len(updated_items)} tư liệu vào cả thư mục Chức Năng và thư mục Khách Hàng!")
-    print("\nThống kê ảnh theo từng khách hàng trong Eagle:")
-    for cname, count in sorted(customer_counts.items(), key=lambda x: x[1], reverse=True):
+            main_file = None
+            for fn in os.listdir(d):
+                if fn.lower().endswith((".jpg", ".jpeg", ".png", ".webp", ".mp4")):
+                    main_file = os.path.join(d, fn)
+                    break
+
+            name = meta.get("name", "")
+            matched_date = "standalone"
+            matched_cust = None
+            for date_str, cinfo in CUSTOMER_MAP.items():
+                if date_str in name:
+                    matched_date = date_str
+                    matched_cust = cinfo
+                    break
+
+            entry = {
+                "id": item_id,
+                "dir": d,
+                "meta_file": item_meta_file,
+                "meta": meta,
+                "image_path": main_file,
+                "name": name,
+                "matched_cust": matched_cust,
+                "date_str": matched_date if matched_date != "standalone" else None
+            }
+            session_groups.setdefault(matched_date, []).append(entry)
+        except Exception:
+            continue
+
+    # 2. Process each session with temporal JourneyClassifier, QualityScorer, and ToolDetector
+    updated_items = {}
+    now_ms = int(time.time() * 1000)
+    customer_counts = {}
+    star_distribution = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
+    phase_distribution = {"before": 0, "inprocess": 0, "after": 0}
+
+    for session_date, items_in_session in session_groups.items():
+        # Apply Temporal Journey Classification across session
+        classified_items = JourneyClassifier.classify_session_items(items_in_session, domain=domain)
+
+        for item in classified_items:
+            item_id = item["id"]
+            meta = item["meta"]
+            name = item["name"]
+            matched_cust = item["matched_cust"]
+            img_path = item["image_path"]
+            phase = item.get("journey_phase", "inprocess")
+            phase_distribution[phase] = phase_distribution.get(phase, 0) + 1
+
+            # 2a. Quality Evaluation (1 - 5 Stars)
+            q_res = QualityScorer.evaluate_image(img_path)
+            rating = q_res["rating"]
+            star_distribution[rating] = star_distribution.get(rating, 0) + 1
+
+            # 2b. Domain Technique & Tool Detection
+            tool_tags = ToolDetector.detect_techniques(img_path, domain=domain)
+
+            # 2c. Generate comprehensive Marketing & Video Brief
+            brief = enricher.generate_brief(
+                asset_label=name,
+                kind="video" if "video" in name.lower() or meta.get("ext") == "mp4" else "photo",
+                customer_name=matched_cust["name"] if matched_cust else None,
+                photo_url=meta.get("url"),
+                date_str=item.get("date_str"),
+                journey_phase=phase,
+                quality_info=q_res,
+                tool_tags=tool_tags
+            )
+
+            # Preserve existing functional folder or determine from brief
+            existing_functional_fid = next((fid for fid in meta.get("folders", []) if fid in FOLDERS.values()), None)
+            main_fid = existing_functional_fid or FOLDERS.get(brief["pillar_id"], FOLDERS["treatment"])
+            folders = [main_fid]
+
+            # Merge all tags cleanly
+            current_tags = set(meta.get("tags", []))
+            for t in brief["tags"]:
+                current_tags.add(t)
+
+            if matched_cust:
+                folders.append(matched_cust["folder_id"])
+                current_tags.add(matched_cust["tag"])
+                customer_counts[matched_cust["name"]] = customer_counts.get(matched_cust["name"], 0) + 1
+
+            tags = sorted(list(current_tags))
+            anno = brief["annotation"]
+            clean_title = brief["title"]
+
+            meta["name"] = clean_title
+            meta["folders"] = folders
+            meta["tags"] = tags
+            meta["annotation"] = anno
+            meta["star"] = rating
+            meta["modificationTime"] = now_ms
+            meta["lastModified"] = now_ms
+
+            # Save on disk
+            with open(item["meta_file"], "w", encoding="utf-8") as f:
+                json.dump(meta, f, ensure_ascii=False, indent=2)
+
+            updated_items[item_id] = meta
+
+            # Update Eagle memory via API
+            try:
+                payload = json.dumps({
+                    "id": item_id,
+                    "tags": tags,
+                    "annotation": anno,
+                    "star": rating
+                }).encode("utf-8")
+                req = urllib.request.Request("http://localhost:41595/api/item/update", data=payload, headers={"Content-Type": "application/json"}, method="POST")
+                urllib.request.urlopen(req, timeout=3)
+            except Exception:
+                pass
+
+    print(f"\n✅ Đã phân loại chuyên sâu thành công {len(updated_items)} tư liệu!")
+    print("\n⭐ Phân bổ Đánh giá Chất lượng (Star Rating):")
+    for s in [5, 4, 3, 2, 1]:
+        print(f"  {'⭐' * s} ({s} Sao): {star_distribution[s]} tư liệu")
+
+    print("\n⏳ Phân bổ Tiến trình Khách hàng (Temporal Journey):")
+    print(f"  🎬 Giai đoạn Trước (Before): {phase_distribution.get('before', 0)} tư liệu")
+    print(f"  💆‍♀️ Giai đoạn Thực hiện (In-Process): {phase_distribution.get('inprocess', 0)} tư liệu")
+    print(f"  💬 Giai đoạn Kết quả (After): {phase_distribution.get('after', 0)} tư liệu")
+
+    print("\n👤 Khách hàng tiêu biểu:")
+    for cname, count in sorted(customer_counts.items(), key=lambda x: x[1], reverse=True)[:5]:
         print(f"  👤 {cname}: {count} tư liệu")
 
     # 3. Update Eagle persistent cache file (library-caches)
@@ -218,23 +287,24 @@ def run(library_path: str = None):
         try:
             with open(CACHE_FILE, "r", encoding="utf-8") as f:
                 cache_items = [json.loads(line) for line in f if line.strip()]
-                
+
             for it in cache_items:
                 iid = it.get("id")
                 if iid in updated_items:
                     it["folders"] = updated_items[iid]["folders"]
                     it["tags"] = updated_items[iid]["tags"]
                     it["annotation"] = updated_items[iid]["annotation"]
+                    it["star"] = updated_items[iid]["star"]
                     it["lastModified"] = now_ms
-                    
+
             with open(CACHE_FILE, "w", encoding="utf-8") as f:
                 for it in cache_items:
                     f.write(json.dumps(it, ensure_ascii=False) + "\n")
-            print("✅ Đã ghi cache thành công!")
+            print("✅ Đã ghi cache Eagle thành công!")
         except Exception as e:
             print("⚠️ Lỗi ghi cache:", e)
 
-    # 4. Trigger Eagle library switch reload
+    # 4. Trigger Eagle reload
     print("\nĐang gửi lệnh yêu cầu Eagle làm mới lại thư viện...")
     reload_status = "skipped"
     try:
@@ -250,11 +320,14 @@ def run(library_path: str = None):
     return {
         "status": "completed",
         "total_processed": len(updated_items),
+        "star_distribution": star_distribution,
+        "phase_distribution": phase_distribution,
         "customer_counts": customer_counts,
         "library_path": lib_path,
-        "active_project": tax_mgr.get_active_project().get("name"),
+        "active_project": active_proj.get("name"),
         "reload_status": reload_status
     }
+
 
 if __name__ == "__main__":
     run()
