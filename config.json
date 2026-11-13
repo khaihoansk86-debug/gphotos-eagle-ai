@@ -1,0 +1,64 @@
+{
+  "eagle": {
+    "api_base": "http://localhost:41595",
+    "default_folder_name": "Google Photos Marketing AI",
+    "auto_create_folders": true
+  },
+  "ai": {
+    "provider": "gemini",
+    "gemini": {
+      "model": "gemini-2.5-flash",
+      "api_key": ""
+    },
+    "openai": {
+      "model": "gpt-4o-mini",
+      "api_key": ""
+    },
+    "temperature": 0.2
+  },
+  "vision_optimization": {
+    "target_image_size": 512,
+    "video_grid": {
+      "rows": 3,
+      "cols": 3,
+      "frame_height": 360,
+      "quality": 80
+    }
+  },
+  "marketing_categories": [
+    {
+      "id": "product_hero",
+      "name": "01_Sản phẩm nổi bật (Hero)",
+      "description": "Ảnh cận cảnh sản phẩm rõ nét, chi tiết, ánh sáng chuẩn quảng cáo"
+    },
+    {
+      "id": "customer_feedback",
+      "name": "02_Feedback & Khách hàng",
+      "description": "Khách hàng sử dụng sản phẩm, cảm xúc tự nhiên, nụ cười, tương tác"
+    },
+    {
+      "id": "b_roll_footage",
+      "name": "03_B-Roll & Cảnh chèn",
+      "description": "Cảnh quay phụ, không gian, thao tác tay, góc máy nghệ thuật phục vụ dựng video"
+    },
+    {
+      "id": "behind_the_scenes",
+      "name": "04_Hậu trường & Đội ngũ",
+      "description": "Quá trình làm việc, chuẩn bị, nhân sự, nhà xưởng, văn phòng"
+    },
+    {
+      "id": "events_activities",
+      "name": "05_Sự kiện & Hoạt động",
+      "description": "Hội thảo, khai trương, team building, tiệc tri ân"
+    },
+    {
+      "id": "archive_discard",
+      "name": "06_Ảnh trùng & Loại bỏ",
+      "description": "Ảnh mờ nét, rung tay, nhắm mắt, trùng góc chụp với ảnh đẹp hơn"
+    }
+  ],
+  "server": {
+    "host": "127.0.0.1",
+    "port": 8899
+  }
+}

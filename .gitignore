@@ -1,0 +1,31 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Sensitive Browser Profile & Sessions (Google Login Cookies)
+browser_profile/
+*.session
+
+# Local SQLite databases & indexed caches
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+catalog.sqlite
+v2/data/
+cache/
+backups/
+
+# Environment and IDE
+.env
+.venv
+env/
+venv/
+.idea/
+.vscode/
+
+# OS specific files
+.DS_Store
+Thumbs.db
+desktop.ini

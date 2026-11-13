@@ -1,0 +1,1189 @@
+/* ==========================================================================
+   KHẢI HOÀN SKINCARE ✕ EAGLE DAM - macOS PREMIUM LIQUID GLASS DESIGN SYSTEM
+   ========================================================================== */
+
+/* ==========================================================================
+   THEME DEFINITIONS: FRESH & MODERN PALETTES (TƯƠI MÁT, HIỆN ĐẠI, KHÔNG TRẮNG CHÓI)
+   ========================================================================== */
+
+/* 1. DEFAULT: FRESH SPA MINT & OCEAN TEAL (Tươi mát, trong lành, chuẩn Skincare & Spa) */
+:root, body, body[data-theme="spa-mint"] {
+  color-scheme: dark;
+  --font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", "Segoe UI", Roboto, system-ui, sans-serif;
+  
+  --bg-base: #061824;
+  --bg-gradient: 
+    radial-gradient(ellipse 90% 65% at 15% 0%, rgba(20, 184, 166, 0.38) 0%, transparent 65%),
+    radial-gradient(ellipse 80% 60% at 85% 15%, rgba(6, 182, 212, 0.35) 0%, transparent 65%),
+    radial-gradient(ellipse 75% 55% at 50% 95%, rgba(16, 185, 129, 0.28) 0%, transparent 65%),
+    radial-gradient(circle at 50% 45%, rgba(14, 165, 233, 0.16) 0%, transparent 70%);
+  --window-bg: rgba(10, 28, 44, 0.78);
+  --card-bg: rgba(255, 255, 255, 0.055);
+  --card-bg-hover: rgba(255, 255, 255, 0.095);
+  --card-border: rgba(94, 234, 212, 0.18);
+  --card-border-hover: rgba(45, 212, 191, 0.55);
+  
+  --theme-accent: #2dd4bf;
+  --theme-accent-gradient: linear-gradient(135deg, #0d9488 0%, #059669 100%);
+  --theme-glow: rgba(45, 212, 191, 0.45);
+  --pill-bg: rgba(45, 212, 191, 0.16);
+  --pill-text: #5eead4;
+  --pill-border: rgba(94, 234, 212, 0.32);
+}
+
+/* 2. THEME: OCEAN AURORA (Cực quang macOS - Tươi trẻ, công nghệ) */
+body[data-theme="ocean-aurora"] {
+  --bg-base: #0a1128;
+  --bg-gradient: 
+    radial-gradient(ellipse 90% 65% at 15% -5%, rgba(79, 70, 229, 0.42) 0%, transparent 65%),
+    radial-gradient(ellipse 80% 60% at 85% 15%, rgba(168, 85, 247, 0.38) 0%, transparent 65%),
+    radial-gradient(ellipse 75% 55% at 50% 100%, rgba(14, 165, 233, 0.32) 0%, transparent 65%);
+  --window-bg: rgba(14, 22, 48, 0.82);
+  --card-bg: rgba(255, 255, 255, 0.05);
+  --card-bg-hover: rgba(255, 255, 255, 0.09);
+  --card-border: rgba(165, 180, 252, 0.18);
+  --card-border-hover: rgba(99, 102, 241, 0.55);
+  
+  --theme-accent: #38bdf8;
+  --theme-accent-gradient: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
+  --theme-glow: rgba(56, 189, 248, 0.45);
+  --pill-bg: rgba(56, 189, 248, 0.15);
+  --pill-text: #7dd3fc;
+  --pill-border: rgba(56, 189, 248, 0.3);
+}
+
+/* 3. THEME: TITANIUM SLATE (Xám Titan & Xanh Băng - Dịu mắt, tối giản Mac Pro) */
+body[data-theme="titanium-slate"] {
+  --bg-base: #111a28;
+  --bg-gradient: 
+    radial-gradient(ellipse 90% 65% at 20% 0%, rgba(100, 116, 139, 0.35) 0%, transparent 65%),
+    radial-gradient(ellipse 80% 60% at 80% 20%, rgba(56, 189, 248, 0.28) 0%, transparent 65%),
+    radial-gradient(ellipse 75% 55% at 50% 90%, rgba(71, 85, 105, 0.42) 0%, transparent 65%);
+  --window-bg: rgba(20, 30, 46, 0.84);
+  --card-bg: rgba(255, 255, 255, 0.045);
+  --card-bg-hover: rgba(255, 255, 255, 0.08);
+  --card-border: rgba(203, 213, 225, 0.16);
+  --card-border-hover: rgba(148, 163, 184, 0.45);
+  
+  --theme-accent: #60a5fa;
+  --theme-accent-gradient: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  --theme-glow: rgba(96, 165, 250, 0.4);
+  --pill-bg: rgba(96, 165, 250, 0.15);
+  --pill-text: #93c5fd;
+  --pill-border: rgba(96, 165, 250, 0.3);
+}
+
+/* 4. THEME: SUNSET AMBER (Hoàng Hôn Ấm Áp - Trẻ trung, rực rỡ) */
+body[data-theme="sunset-amber"] {
+  --bg-base: #18111a;
+  --bg-gradient: 
+    radial-gradient(ellipse 90% 65% at 15% 0%, rgba(244, 63, 94, 0.35) 0%, transparent 65%),
+    radial-gradient(ellipse 80% 60% at 85% 15%, rgba(249, 115, 22, 0.32) 0%, transparent 65%),
+    radial-gradient(ellipse 75% 55% at 50% 100%, rgba(234, 179, 8, 0.25) 0%, transparent 65%);
+  --window-bg: rgba(28, 18, 27, 0.84);
+  --card-bg: rgba(255, 255, 255, 0.05);
+  --card-bg-hover: rgba(255, 255, 255, 0.09);
+  --card-border: rgba(253, 164, 175, 0.18);
+  --card-border-hover: rgba(244, 63, 94, 0.5);
+  
+  --theme-accent: #fb7185;
+  --theme-accent-gradient: linear-gradient(135deg, #e11d48 0%, #be123c 100%);
+  --theme-glow: rgba(251, 113, 133, 0.45);
+  --pill-bg: rgba(251, 113, 133, 0.15);
+  --pill-text: #fda4af;
+  --pill-border: rgba(251, 113, 133, 0.3);
+}
+
+/* Common Design Tokens */
+:root {
+  --text-primary: #ffffff;
+  --text-secondary: rgba(240, 250, 255, 0.78);
+  --text-muted: rgba(200, 225, 245, 0.55);
+  --text-dim: rgba(160, 190, 220, 0.38);
+  
+  --apple-green: #30d158;
+  --apple-cyan: #5ac8fa;
+  --apple-orange: #ff9f0a;
+  --apple-purple: #bf5af2;
+  
+  --glass-blur: blur(35px) saturate(190%);
+  --window-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  --card-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  --transition-apple: all 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--bg-base);
+  background-image: var(--bg-gradient);
+  background-attachment: fixed;
+  color: var(--text-primary);
+  min-height: 100vh;
+  padding: 30px 20px 48px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.4s ease, background-image 0.4s ease;
+}
+
+/* ==========================================================================
+   macOS WINDOW CONTAINER
+   ========================================================================== */
+.macos-window {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: var(--window-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 22px;
+  box-shadow: var(--window-shadow);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: background 0.35s ease;
+}
+
+/* macOS Titlebar / Header */
+.macos-titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  user-select: none;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* macOS Traffic Light Buttons */
+.traffic-lights {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tl-btn {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+  position: relative;
+  cursor: pointer;
+  transition: opacity 0.15s ease, filter 0.15s ease;
+}
+
+.tl-close {
+  background: #ff5f56;
+  border: 1px solid #e0443e;
+}
+
+.tl-minimize {
+  background: #ffbd2e;
+  border: 1px solid #dea123;
+}
+
+.tl-maximize {
+  background: #27c93f;
+  border: 1px solid #1aab29;
+}
+
+.traffic-lights:hover .tl-close::before {
+  content: "✕";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 7px;
+  font-weight: 900;
+  color: #4d0000;
+}
+
+.traffic-lights:hover .tl-minimize::before {
+  content: "–";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 9px;
+  font-weight: 900;
+  color: #533000;
+}
+
+.traffic-lights:hover .tl-maximize::before {
+  content: "+";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 9px;
+  font-weight: 900;
+  color: #003600;
+}
+
+/* Titlebar Title */
+.titlebar-center {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.app-icon-badge {
+  font-size: 15px;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 4px 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.window-title {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+
+.window-badge {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--pill-text);
+  background: var(--pill-bg);
+  border: 1px solid var(--pill-border);
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+/* Theme Switcher Segmented Control */
+.theme-switcher {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.35);
+  padding: 3px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(15px);
+  gap: 2px;
+}
+
+.theme-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: var(--transition-apple);
+  white-space: nowrap;
+}
+
+.theme-btn:hover {
+  color: #ffffff;
+}
+
+.theme-btn.active {
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+/* Titlebar Status Pills */
+.titlebar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.update-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(16, 185, 129, 0.2));
+  border: 1px solid rgba(6, 182, 212, 0.4);
+  color: #6ee7b7;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.update-pill-btn:hover {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.35), rgba(16, 185, 129, 0.35));
+  border-color: #34d399;
+  color: #a7f3d0;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(6, 182, 212, 0.2);
+}
+
+.update-pill-btn svg {
+  width: 13px;
+  height: 13px;
+  stroke-width: 2.2;
+}
+
+.update-pill-btn.loading {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.update-pill-btn.loading svg {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  padding: 4px 11px;
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+  transition: var(--transition-apple);
+}
+
+.status-pill:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+/* Pulsing Status Dot */
+.status-dot-pulse {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--apple-green);
+  box-shadow: 0 0 8px var(--apple-green);
+  animation: pulse-dot 2.5s infinite;
+}
+
+@keyframes pulse-dot {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(48, 209, 88, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(48, 209, 88, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(48, 209, 88, 0); }
+}
+
+/* ==========================================================================
+   MAIN WINDOW BODY
+   ========================================================================== */
+.macos-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ==========================================================================
+   1. HERO KPI CARDS (macOS WIDGETS)
+   ========================================================================== */
+.kpi-banner {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.kpi-card {
+  background: var(--card-bg);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: var(--card-shadow);
+  transition: var(--transition-apple);
+  position: relative;
+  overflow: hidden;
+}
+
+.kpi-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+}
+
+.kpi-card:hover {
+  transform: translateY(-3px);
+  background: var(--card-bg-hover);
+  border-color: var(--card-border-hover);
+  box-shadow: 0 16px 36px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.kpi-icon-wrapper {
+  width: 48px;
+  height: 48px;
+  border-radius: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+/* Icon Gradient Tints */
+.kpi-icon-photos {
+  background: linear-gradient(135deg, rgba(20, 184, 166, 0.3) 0%, rgba(6, 182, 212, 0.15) 100%);
+  color: #5eead4;
+}
+
+.kpi-icon-videos {
+  background: linear-gradient(135deg, rgba(191, 90, 242, 0.3) 0%, rgba(255, 55, 95, 0.15) 100%);
+  color: #e879f9;
+}
+
+.kpi-icon-clients {
+  background: linear-gradient(135deg, rgba(48, 209, 88, 0.3) 0%, rgba(50, 215, 75, 0.15) 100%);
+  color: #6ee7b7;
+}
+
+.kpi-icon-eagle {
+  background: linear-gradient(135deg, rgba(255, 159, 10, 0.3) 0%, rgba(255, 214, 10, 0.15) 100%);
+  color: #fde047;
+}
+
+.kpi-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.kpi-value {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: #ffffff;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+}
+
+.kpi-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+/* ==========================================================================
+   2. CONNECTION & PROFILE HUB (QUẢN LÝ PROFILE GOOGLE PHOTOS & EAGLE DAM)
+   ========================================================================== */
+.connection-hub-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 860px) {
+  .connection-hub-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.hub-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 18px;
+  padding: 18px 20px;
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  box-shadow: var(--card-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transition: var(--transition-apple);
+  position: relative;
+  overflow: hidden;
+}
+
+.hub-card:hover {
+  background: var(--card-bg-hover);
+  border-color: var(--card-border-hover);
+  box-shadow: 0 16px 36px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.hub-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.hub-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hub-icon-badge {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.hub-icon-photos {
+  background: linear-gradient(135deg, rgba(20, 184, 166, 0.3) 0%, rgba(6, 182, 212, 0.15) 100%);
+  color: #5eead4;
+}
+
+.hub-icon-eagle {
+  background: linear-gradient(135deg, rgba(255, 159, 10, 0.3) 0%, rgba(255, 214, 10, 0.15) 100%);
+  color: #fde047;
+}
+
+.hub-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.hub-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+.hub-status-online {
+  background: rgba(48, 209, 88, 0.14);
+  color: #34d399;
+  border: 1px solid rgba(48, 209, 88, 0.3);
+}
+
+.hub-status-offline {
+  background: rgba(239, 68, 68, 0.14);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* Account Details Row */
+.hub-account-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hub-avatar-img {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--theme-accent);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.hub-avatar-fallback {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0d9488 0%, #0284c7 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.hub-account-info {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.hub-account-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hub-account-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Custom Selector Group */
+.hub-select-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.hub-select-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+.hub-select {
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  outline: none;
+  cursor: pointer;
+  transition: var(--transition-apple);
+  backdrop-filter: blur(10px);
+}
+
+.hub-select:focus {
+  border-color: var(--theme-accent);
+  box-shadow: 0 0 0 3px var(--pill-bg);
+}
+
+.hub-select option {
+  background: #0f1c2b;
+  color: #ffffff;
+}
+
+.hub-stat-line {
+  font-size: 12px;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hub-actions-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+/* Modern SVG Icon Rules */
+.svg-icon {
+  width: 17px;
+  height: 17px;
+  stroke-width: 1.8;
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+.kpi-icon-wrapper svg {
+  width: 24px;
+  height: 24px;
+  stroke-width: 2;
+}
+
+.pillar-icon-box {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.pillar-icon-box svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 1.8;
+}
+
+.pillar-item-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.spotlight-svg {
+  width: 16px;
+  height: 16px;
+  stroke-width: 2;
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.arrow-svg {
+  width: 13px;
+  height: 13px;
+  stroke-width: 2.2;
+}
+
+/* macOS Buttons */
+.macos-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 9px 16px;
+  border-radius: 11px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  transition: var(--transition-apple);
+  outline: none;
+  user-select: none;
+}
+
+.macos-btn:active {
+  transform: scale(0.97);
+}
+
+.macos-btn-primary {
+  background: var(--theme-accent-gradient);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  box-shadow: 0 4px 16px var(--theme-glow), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.macos-btn-primary:hover {
+  filter: brightness(1.15);
+  box-shadow: 0 6px 22px var(--theme-glow), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+
+.macos-btn-secondary {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(15px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.macos-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.macos-btn-outline {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.macos-btn-outline:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--theme-accent);
+}
+
+.macos-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* Action Status Banner */
+.action-status-box {
+  margin-top: 14px;
+  padding: 11px 16px;
+  background: rgba(20, 184, 166, 0.12);
+  border: 1px solid rgba(20, 184, 166, 0.32);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  backdrop-filter: blur(12px);
+}
+
+.status-loading-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: #ccfbf1;
+}
+
+.loading-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(94, 234, 212, 0.3);
+  border-top-color: #2dd4bf;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Alert Notification Toast */
+#message {
+  display: none;
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 500;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  transition: var(--transition-apple);
+}
+
+/* ==========================================================================
+   3. MAIN SPLIT GRID (50/50 BALANCED macOS FINDER STYLE)
+   ========================================================================== */
+.main-dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.macos-card {
+  background: var(--card-bg);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border: 1px solid var(--card-border);
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: var(--card-shadow);
+  display: flex;
+  flex-direction: column;
+  transition: var(--transition-apple);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.header-title-group {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.card-title-icon {
+  font-size: 18px;
+}
+
+.card-header h2 {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #ffffff;
+}
+
+.badge-pill {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.02em;
+}
+
+.badge-success {
+  background: rgba(48, 209, 88, 0.16);
+  color: #34d399;
+  border: 1px solid rgba(48, 209, 88, 0.32);
+}
+
+.badge-accent {
+  background: var(--pill-bg);
+  color: var(--pill-text);
+  border: 1px solid var(--pill-border);
+}
+
+/* ==========================================================================
+   CONTENT PILLARS (LEFT PANE)
+   ========================================================================== */
+.content-pillars-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pillar-item {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 12px 15px;
+  transition: var(--transition-apple);
+}
+
+.pillar-item:hover {
+  background: rgba(255, 255, 255, 0.065);
+  border-color: var(--card-border-hover);
+  transform: translateX(2px);
+}
+
+.pillar-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.pillar-item-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #f0fdfa;
+}
+
+.pillar-item-badge {
+  background: var(--pill-bg);
+  color: var(--pill-text);
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px solid var(--pill-border);
+}
+
+.pillar-item-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+/* VIP Folder Note Box */
+.vip-folder-note {
+  margin-top: 14px;
+  padding: 12px 15px;
+  background: rgba(191, 90, 242, 0.08);
+  border: 1px dashed rgba(191, 90, 242, 0.35);
+  border-radius: 12px;
+}
+
+.vip-note-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.vip-note-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #e9d5ff;
+}
+
+.vip-note-badge {
+  font-size: 10px;
+  background: rgba(191, 90, 242, 0.22);
+  color: #f3e8ff;
+  padding: 2px 7px;
+  border-radius: 6px;
+  font-weight: 700;
+}
+
+.vip-note-text {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+/* ==========================================================================
+   CUSTOMER DIRECTORY & SPOTLIGHT SEARCH (RIGHT PANE)
+   ========================================================================== */
+.client-search-wrapper {
+  position: relative;
+  margin-bottom: 14px;
+}
+
+.spotlight-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 13px;
+  pointer-events: none;
+}
+
+.client-search-input {
+  width: 100%;
+  padding: 10px 14px 10px 34px;
+  border-radius: 11px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.35);
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 13px;
+  outline: none;
+  backdrop-filter: blur(15px);
+  transition: var(--transition-apple);
+}
+
+.client-search-input::placeholder {
+  color: var(--text-muted);
+}
+
+.client-search-input:focus {
+  border-color: var(--theme-accent);
+  box-shadow: 0 0 0 3px var(--pill-bg);
+  background: rgba(0, 0, 0, 0.5);
+}
+
+/* Scrollable Container with macOS Sleek Scrollbar */
+.client-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  max-height: 385px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.client-list-container::-webkit-scrollbar {
+  width: 5px;
+}
+
+.client-list-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.client-list-container::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 10px;
+}
+
+.client-list-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+/* Customer Item Card */
+.client-row-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 9px 13px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 10px;
+  text-decoration: none;
+  transition: var(--transition-apple);
+}
+
+.client-row-card:hover {
+  background: var(--pill-bg);
+  border-color: var(--card-border-hover);
+  transform: translateX(2px);
+}
+
+.client-row-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: #f1f5f9;
+}
+
+.client-row-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.client-row-count {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--pill-text);
+  background: var(--pill-bg);
+  padding: 2px 7px;
+  border-radius: 6px;
+  border: 1px solid var(--pill-border);
+}
+
+.client-row-arrow {
+  font-size: 12px;
+  color: var(--text-dim);
+  transition: color 0.15s ease, transform 0.15s ease;
+}
+
+.client-row-card:hover .client-row-arrow {
+  color: var(--theme-accent);
+  transform: translate(1px, -1px);
+}
+
+/* ==========================================================================
+   RESPONSIVE DESIGN (macOS ADAPTIVE LAYOUT)
+   ========================================================================== */
+@media (max-width: 960px) {
+  .main-dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+  .kpi-banner {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  body {
+    padding: 12px;
+  }
+  .macos-window {
+    border-radius: 16px;
+  }
+  .macos-body {
+    padding: 16px;
+    gap: 16px;
+  }
+  .kpi-banner {
+    grid-template-columns: 1fr;
+  }
+  .toolbar-layout {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .toolbar-actions {
+    flex-direction: column;
+  }
+  .toolbar-actions .macos-btn {
+    width: 100%;
+  }
+  .macos-titlebar {
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+  }
+}

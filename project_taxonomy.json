@@ -1,0 +1,363 @@
+{
+  "active_project": "khaihoan_skincare",
+  "projects": {
+    "khaihoan_skincare": {
+      "id": "khaihoan_skincare",
+      "name": "Khải Hoàn Skincare & Spa Phục Hồi Da",
+      "domain": "dermatology_spa",
+      "description": "Kho tư liệu marketing, video TikTok/Reels và hồ sơ case study da của Khải Hoàn Skincare.",
+      "pillars": [
+        {
+          "id": "facility",
+          "folder_name": "01_Hình ảnh về Spa (Cơ sở vật chất, Máy móc, Không gian)",
+          "tag": "Cơ_Sở_Vật_Chất",
+          "color": "#10b981",
+          "description": "Phòng khám vô trùng, máy móc thẩm mỹ công nghệ cao, sảnh tiếp đón khách hàng.",
+          "visual_keywords": [
+            "phòng",
+            "sảnh",
+            "máy",
+            "không gian",
+            "giường",
+            "biển hiệu",
+            "thiết bị"
+          ],
+          "content_angle": "Khẳng định uy tín, quy chuẩn y khoa, trang thiết bị hiện đại tạo sự an tâm tuyệt đối cho khách hàng."
+        },
+        {
+          "id": "feedback",
+          "folder_name": "02_Feedback Khách Hàng (Soi gương, Thư giãn sau điều trị)",
+          "tag": "Feedback_Khách_Hàng",
+          "color": "#06b6d4",
+          "description": "Khách soi gương nụ cười rạng rỡ, thư giãn sau liệu trình, review thực tế kết quả điều trị.",
+          "visual_keywords": [
+            "soi gương",
+            "cười",
+            "hài lòng",
+            "nằm thư giãn",
+            "khách",
+            "review",
+            "kết quả"
+          ],
+          "content_angle": "Bằng chứng chân thực (Social Proof), kích hoạt cảm xúc muốn được trải nghiệm và thay đổi làn da như khách hàng."
+        },
+        {
+          "id": "hook",
+          "folder_name": "03_Hook 3s TikTok (Cận cảnh da mụn, Nặn mụn, Soi da)",
+          "tag": "Hook_3s_TikTok",
+          "color": "#ef4444",
+          "description": "Macro cận cảnh nhân mụn, kỹ thuật gắp cồi chuẩn y khoa, bề mặt da viêm mụn giữ chân người xem 3s đầu.",
+          "visual_keywords": [
+            "cận cảnh",
+            "mụn",
+            "gắp cồi",
+            "lấy nhân",
+            "soi da",
+            "viêm",
+            "lỗ chân lông",
+            "bề mặt da"
+          ],
+          "content_angle": "Visual Shock giữ chân 3s đầu tiên, đánh trúng 'nỗi đau' làn da, kích thích tò mò xem hết clip."
+        },
+        {
+          "id": "treatment",
+          "folder_name": "04_B-Roll Liệu trình & Thao tác Bác sĩ - KTV (Quy trình chuẩn)",
+          "tag": "BRoll_Liệu_Trình",
+          "color": "#8b5cf6",
+          "description": "Kỹ thuật viên đeo găng vô trùng, lau sát khuẩn, đắp mặt nạ sinh học, chiếu đèn Omega light.",
+          "visual_keywords": [
+            "thao tác",
+            "găng tay",
+            "sát khuẩn",
+            "mặt nạ",
+            "chiếu đèn",
+            "kỹ thuật viên",
+            "bác sĩ",
+            "liệu trình"
+          ],
+          "content_angle": "Minh chứng tay nghề chuyên nghiệp, từng bước tỉ mỉ chuẩn y khoa, nâng tầm giá trị dịch vụ."
+        },
+        {
+          "id": "video",
+          "folder_name": "05_Raw Video Footage (CapCut Reels - TikTok Dọc)",
+          "tag": "Raw_Video_Footage",
+          "color": "#f59e0b",
+          "description": "Đoạn quay video dọc 9:16 chất lượng cao, sẵn sàng kéo thả dựng video ngắn TikTok, Reels, Shorts.",
+          "visual_keywords": [
+            "video",
+            "clip",
+            "mp4",
+            "dọc 9:16",
+            "footage"
+          ],
+          "content_angle": "Kho tài nguyên chuyển động thô cho editor kéo thả dựng kịch bản bắt trend đa nền tảng."
+        },
+        {
+          "id": "client_vip",
+          "folder_name": "06_Hồ sơ Khách Hàng (Case Studies & Feedback)",
+          "tag": "Hồ_Sơ_Khách_Hàng",
+          "color": "#ec4899",
+          "description": "Các thư mục riêng theo tên khách hàng VIP (Chị Ngọc, Thu Lee, Ngô Phương, Chị Phương...).",
+          "visual_keywords": [
+            "chị",
+            "thu lee",
+            "ngô phương",
+            "phương",
+            "ngân",
+            "hương"
+          ],
+          "content_angle": "Lưu trữ liệu trình dài hạn Before-After của từng khách, làm tư liệu tư vấn chốt sale 1-1."
+        }
+      ],
+      "hook_script_templates": [
+        "3s đầu giật tít: 'Bao lâu rồi bạn chưa đi lấy nhân mụn chuẩn y khoa?' + Zoom cận cảnh gắp cồi.",
+        "3s đầu: 'Làn da sau 60 phút điều trị tại Khải Hoàn thay đổi như thế nào?' + Khách soi gương cười tươi.",
+        "3s đầu đánh vào nỗi đau: 'Đừng tự nặn mụn ở nhà nếu không muốn bị rỗ!' + Thao tác sát khuẩn vô trùng.",
+        "3s đầu tò mò: 'Cận cảnh cồi mụn ẩn tích tụ 3 tháng được lấy ra êm ru không để lại thâm.'"
+      ],
+      "tag_groups": [
+        {
+          "name": "1. Hình ảnh về Spa & Cơ sở",
+          "color": "#10b981",
+          "tags": [
+            "Cơ_Sở_Vật_Chất",
+            "Phòng_Khám",
+            "Máy_Công_Nghệ_Cao",
+            "Sảnh_Tiếp_Đón"
+          ]
+        },
+        {
+          "name": "2. Feedback & Trải nghiệm khách",
+          "color": "#06b6d4",
+          "tags": [
+            "Feedback_Khách_Hàng",
+            "Khách_Soi_Gương",
+            "Thư_Giãn",
+            "Social_Proof"
+          ]
+        },
+        {
+          "name": "3. Hook 3s & Cận cảnh da mụn",
+          "color": "#ef4444",
+          "tags": [
+            "Hook_3s_TikTok",
+            "Cận_Cảnh_Mụn",
+            "Gắp_Cồi_Mụn",
+            "Before_After"
+          ]
+        },
+        {
+          "name": "4. B-Roll Liệu trình & Tay nghề",
+          "color": "#8b5cf6",
+          "tags": [
+            "BRoll_Liệu_Trình",
+            "KTV_Chuyên_Nghiệp",
+            "Quy_Trình_Y_Khoa",
+            "Đắp_Mặt_Nạ"
+          ]
+        },
+        {
+          "name": "5. Định dạng & Video Reels",
+          "color": "#f59e0b",
+          "tags": [
+            "Dọc_9:16",
+            "CapCut_Reels",
+            "TikTok_Shorts",
+            "Raw_Footage"
+          ]
+        },
+        {
+          "name": "6. Khách hàng VIP (Case Studies)",
+          "color": "#ec4899",
+          "tags": [
+            "Khách_ChịNgọc",
+            "Khách_ThuLee",
+            "Khách_KimNgân",
+            "Khách_NgôPhương",
+            "Khách_XuânHương"
+          ]
+        }
+      ]
+    },
+    "nha_khoa_clinic": {
+      "id": "nha_khoa_clinic",
+      "name": "Nha Khoa Thẩm Mỹ & Niềng Răng Y Khoa",
+      "domain": "dental_clinic",
+      "description": "Kho tư liệu nụ cười, case study chỉnh nha, cấy ghép Implant và B-Roll bác sĩ.",
+      "pillars": [
+        {
+          "id": "facility",
+          "folder_name": "01_Phòng khám & Ghế nha vô trùng",
+          "tag": "NhaKhoa_CơSở",
+          "color": "#10b981",
+          "description": "Dàn ghế nha khoa hiện đại, phòng vô trùng tiêu chuẩn quốc tế, máy chụp CT Cone Beam.",
+          "visual_keywords": [
+            "ghế nha",
+            "phòng khám",
+            "ct",
+            "cone beam",
+            "vô trùng"
+          ],
+          "content_angle": "Khẳng định cơ sở vật chất chuẩn quốc tế, máy móc tối tân."
+        },
+        {
+          "id": "feedback",
+          "folder_name": "02_Nụ cười khách hàng (Before & After)",
+          "tag": "Nụ_Cười_Khách_Hàng",
+          "color": "#06b6d4",
+          "description": "Hình ảnh nụ cười tự tin, rạng rỡ của khách hàng sau khi tháo niềng hoặc dán sứ.",
+          "visual_keywords": [
+            "nụ cười",
+            "răng trắng",
+            "tháo niềng",
+            "tự tin",
+            "khách cười"
+          ],
+          "content_angle": "Chuyển hóa ngoại hình ngoạn mục nhờ nụ cười hoàn mỹ."
+        },
+        {
+          "id": "hook",
+          "folder_name": "03_Hook 3s TikTok (Cận cảnh cạo vôi, tháo mắc cài)",
+          "tag": "Hook_3s_NhaKhoa",
+          "color": "#ef4444",
+          "description": "Cận cảnh sóng siêu âm cạo mảng bám vôi răng, khoảnh khắc tháo mắc cài gây thỏa mãn (oddly satisfying).",
+          "visual_keywords": [
+            "cạo vôi",
+            "mắc cài",
+            "cận cảnh răng",
+            "nhổ răng khôn",
+            "đánh bóng"
+          ],
+          "content_angle": "Hình ảnh thỏa mãn thị giác (Oddly Satisfying) cực kỳ viral trên TikTok."
+        },
+        {
+          "id": "treatment",
+          "folder_name": "04_B-Roll Bác sĩ chuyên khoa thao tác chuẩn",
+          "tag": "BRoll_BácSĩ_NhaKhoa",
+          "color": "#8b5cf6",
+          "description": "Thao tác gắn mắc cài, lấy dấu răng kỹ thuật số 3D, bác sĩ tư vấn chuyên sâu.",
+          "visual_keywords": [
+            "bác sĩ",
+            "gắn mắc cài",
+            "lấy dấu răng",
+            "khám răng",
+            "chỉnh nha"
+          ],
+          "content_angle": "Tôn vinh chuyên môn và sự nhẹ nhàng, tỉ mỉ của đội ngũ bác sĩ."
+        },
+        {
+          "id": "video",
+          "folder_name": "05_Raw Video Clip (Phỏng vấn & Cảm nhận)",
+          "tag": "Video_Phỏng_Vấn_Khách",
+          "color": "#f59e0b",
+          "description": "Video khách hàng chia sẻ hành trình niềng răng 2 năm, cảm xúc ngày tháo niềng.",
+          "visual_keywords": [
+            "video",
+            "phỏng vấn",
+            "cảm nhận",
+            "chia sẻ",
+            "tiktok"
+          ],
+          "content_angle": "Storytelling chân thật, chạm đến tâm lý những người đang đắn đo niềng răng."
+        }
+      ],
+      "hook_script_templates": [
+        "3s đầu satisfying: 'Cận cảnh đánh bay mảng bám vôi răng 5 năm tích tụ trong 30 giây!'",
+        "3s đầu cảm xúc: 'Khoảnh khắc tháo niềng sau 730 ngày: Cô gái bật khóc khi soi gương.'",
+        "3s đầu cảnh báo: '3 dấu hiệu cho thấy răng khôn của bạn đang đâm hỏng răng số 7!'"
+      ]
+    },
+    "fb_culinary": {
+      "id": "fb_culinary",
+      "name": "Nhà Hàng & Quán Cafe F&B",
+      "domain": "food_beverage",
+      "description": "Kho hình ảnh món ăn, không gian trải nghiệm và video ASMR ẩm thực.",
+      "pillars": [
+        {
+          "id": "facility",
+          "folder_name": "01_Không gian quán & Góc check-in",
+          "tag": "Không_Gian_Quán",
+          "color": "#10b981",
+          "description": "Góc bàn ấm cúng, ánh sáng tự nhiên, quầy bar chill, không gian sân vườn.",
+          "visual_keywords": [
+            "không gian",
+            "bàn",
+            "quầy bar",
+            "check-in",
+            "ánh sáng",
+            "decor"
+          ],
+          "content_angle": "Khơi gợi mong muốn đến trải nghiệm và chụp ảnh sống ảo."
+        },
+        {
+          "id": "feedback",
+          "folder_name": "02_Trải nghiệm khách hàng & Bữa tiệc sum vầy",
+          "tag": "Khách_Ăn_Uống",
+          "color": "#06b6d4",
+          "description": "Gia đình, nhóm bạn cụng ly, nụ cười sum họp bên bàn tiệc ấm cúng.",
+          "visual_keywords": [
+            "cụng ly",
+            "khách",
+            "ăn uống",
+            "gia đình",
+            "bạn bè",
+            "tiệc"
+          ],
+          "content_angle": "Không khí ấm áp, điểm hẹn lý tưởng cho những cuộc gặp gỡ."
+        },
+        {
+          "id": "hook",
+          "folder_name": "03_Hook 3s ASMR (Món ăn xèo xèo, Rót sốt, Cắt bánh)",
+          "tag": "Hook_3s_ASMR_MónĂn",
+          "color": "#ef4444",
+          "description": "Cận cảnh miếng bò bít tết xèo xèo trên chảo gang, phô mai kéo sợi, sốt bóng bẩy kích thích vị giác.",
+          "visual_keywords": [
+            "xèo xèo",
+            "kéo sợi",
+            "rót sốt",
+            "món ăn cận cảnh",
+            "bốc khói",
+            "asmr"
+          ],
+          "content_angle": "Kích thích vị giác tột độ ngay trong 3s đầu tiên (Food Porn / Craving)."
+        },
+        {
+          "id": "treatment",
+          "folder_name": "04_B-Roll Bếp trưởng & Bartender biểu diễn",
+          "tag": "BRoll_Đầu_Bếp_Pha_Chế",
+          "color": "#8b5cf6",
+          "description": "Đầu bếp tung chảo lửa, tỉa rau củ điêu luyện, bartender lắc shaker điệu nghệ.",
+          "visual_keywords": [
+            "bếp trưởng",
+            "đầu bếp",
+            "pha chế",
+            "bartender",
+            "chảo lửa",
+            "kỹ thuật"
+          ],
+          "content_angle": "Tôn vinh nghệ thuật ẩm thực và sự tâm huyết trong từng món ăn."
+        },
+        {
+          "id": "video",
+          "folder_name": "05_Raw Video Footage (CapCut Reels Food Review)",
+          "tag": "Video_Review_Ẩm_Thực",
+          "color": "#f59e0b",
+          "description": "Clip ngắn lia bàn món ăn, reaction thử miếng đầu tiên, âm thanh nhai giòn rụm.",
+          "visual_keywords": [
+            "video",
+            "review",
+            "lia bàn",
+            "thử món",
+            "reaction"
+          ],
+          "content_angle": "Format review ẩm thực chân thực, kích thích hành vi rủ bạn bè đi ăn ngay."
+        }
+      ],
+      "hook_script_templates": [
+        "3s đầu giòn tan: [Âm thanh cắn rụm miếng gà sốt cay] + 'Món ngon nhất quán liệu có như lời đồn?'",
+        "3s đầu đẫm sốt: 'Rót sốt phô mai ngập tràn đĩa mỳ Ý béo ngậy khiến ai xem cũng phải thèm!'",
+        "3s đầu bí ẩn: 'Quán cafe núp hẻm nhưng cứ mở cửa là kín bàn vì lý do này.'"
+      ]
+    }
+  }
+}

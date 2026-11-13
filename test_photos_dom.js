@@ -1,0 +1,18 @@
+const assert=require('node:assert/strict');
+const {readPage}=require('./photos_snapshot');
+global.location={origin:'https://photos.google.com',href:'https://photos.google.com/'};
+const account={getAttribute:()=> 'Tài khoản Google: Example (one@example.com)',querySelectorAll:()=>[{src:'https://ssl.gstatic.com/ring.png'},{src:'https://lh3.googleusercontent.com/avatar'}]};
+const image={src:'https://photos.fife.usercontent.google.com/media',style:{},getAttribute:()=>''};
+const link={href:'https://photos.google.com/photo/A',getAttribute:()=> 'Ảnh – Dọc – 11:27:47 12 thg 11, 2026',querySelector:s=>s==='[data-video-duration]'?null:image};
+let moved=0;
+const main={clientHeight:600,scrollHeight:2400,scrollTop:0,querySelectorAll:s=>s==='*'?[]:[link,link],scrollBy:()=>moved++};
+global.getComputedStyle=()=>({overflowY:'auto'});
+global.document={querySelectorAll:()=>[account],querySelector:()=>main,scrollingElement:main};
+const result=readPage(true);
+assert.equal(result.avatar_url,'https://lh3.googleusercontent.com/avatar');
+assert.equal(result.account_key,'one@example.com');
+assert.equal(result.items.length,1);
+assert.equal(result.visible.photo,1);
+assert.equal(result.total_photos,null);
+assert.equal(moved,1);
+console.log('DOM extraction: avatar, media ID deduplication, classification and scrolling passed.');

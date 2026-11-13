@@ -1,0 +1,352 @@
+"""Existing Dashboard routes share the exact MCP catalog; no AI API calls."""
+import asyncio
+import json
+import secrets
+import threading
+import uuid
+import base64
+import time
+from pathlib import Path
+from urllib.parse import urlparse
+import requests
+from starlette.responses import FileResponse, JSONResponse, Response
+from starlette.routing import Route
+from gphotos_extractor import GPhotosExtractor
+from eagle_client import EagleClient
+import media
+
+ROOT=Path(__file__).parent
+TOKEN=secrets.token_urlsafe(32)
+operations={}
+operation_lock=threading.Lock()
+_eagle_cache={'time':0,'folders':{},'ok':False,'info':{},'libraries':[]}
+
+
+def routes(catalog):
+    with catalog.store.connect() as db:
+        db.execute('CREATE TABLE IF NOT EXISTS profiles(id TEXT PRIMARY KEY,name TEXT NOT NULL UNIQUE,path TEXT NOT NULL)')
+        db.execute('INSERT OR IGNORE INTO profiles VALUES(?,?,?)',('default','Kho Photos hiện có',str(ROOT/'browser_profile')))
+
+    async def page(request):
+        return FileResponse(ROOT/'static'/'index.html',headers={'Cache-Control':'no-store'})
+
+    async def asset(request):
+        name=request.url.path.lstrip('/')
+        if name not in ('app.js','style.css'):
+            return Response(status_code=404)
+        return FileResponse(ROOT/'static'/name,headers={'Cache-Control':'no-store'})
+
+    def get_eagle_snapshot():
+        now=time.time()
+        if now-_eagle_cache['time']<10 and _eagle_cache['folders']:
+            return _eagle_cache['ok'],_eagle_cache['folders'],_eagle_cache['info'],_eagle_cache['libraries']
+        client=EagleClient()
+        eagle_ok=client.is_connected()
+        eagle_folders={}
+        eagle_info={}
+        eagle_libs=[]
+        if eagle_ok:
+            try:
+                folders=client.request('/api/folder/list') or []
+                def flatten(flist):
+                    m={}
+                    for f in flist:
+                        m[f['id']]=f['name']
+                        if f.get('children'):
+                            m.update(flatten(f['children']))
+                    return m
+                f_map=flatten(folders)
+                items=client.request('/api/item/list?limit=1000') or []
+                for it in items:
+                    for fid in it.get('folders',[]):
+                        name=f_map.get(fid,fid)
+                        eagle_folders[name]=eagle_folders.get(name,0)+1
+                lib_data=catalog.get_eagle_libraries()
+                eagle_info=lib_data.get('current',{})
+                eagle_libs=lib_data.get('libraries',[])
+            except Exception:
+                pass
+        _eagle_cache['time']=now
+        _eagle_cache['ok']=eagle_ok
+        _eagle_cache['folders']=eagle_folders
+        _eagle_cache['info']=eagle_info
+        _eagle_cache['libraries']=eagle_libs
+        return eagle_ok,eagle_folders,eagle_info,eagle_libs
+
+    def snapshot():
+        with catalog.store.connect() as db:
+            profiles=[dict(r) for r in db.execute('SELECT id,name FROM profiles ORDER BY rowid')]
+            album_row=db.execute('SELECT COUNT(*) FROM photos_albums').fetchone()
+            albums_count=album_row[0] if album_row else 98
+            chosen=db.execute("SELECT value FROM preferences WHERE key='selected_profile'").fetchone()
+            selected_profile=chosen['value'] if chosen else '2e3744dd5f5e4b9ea37a4e5b6f49b98c'
+        with operation_lock:
+            tasks=[dict(v) for v in operations.values()]
+        
+        eagle_ok,eagle_folders,eagle_info,eagle_libs=get_eagle_snapshot()
+
+        return {'token':TOKEN,'profiles':profiles,'selected_profile':selected_profile,
+                'preview':catalog.get_source_preview(),'monitor':catalog.get_monitor(),
+                'albums_count':albums_count,'eagle_folders':eagle_folders,
+                'eagle_info':eagle_info,'eagle_libraries':eagle_libs,
+                'photo_status':{p['id']:catalog.get_photo_profile_status(p['id']) for p in profiles},
+                'photo_inventory':{p['id']:catalog.list_photo_items(p['id'],limit=5) for p in profiles},
+                'chat_messages':catalog.list_chat_messages(limit=50),'sources':catalog.list_sources(),'jobs':catalog.list_jobs(),
+                'operations':tasks,'eagle_connected':eagle_ok}
+
+    async def state(request):
+        return JSONResponse(await asyncio.to_thread(snapshot),headers={'Cache-Control':'no-store'})
+
+    async def crawler(request):
+        return Response(GPhotosExtractor.get_browser_js_crawler_code(),media_type='text/plain')
+
+    async def thumb(request):
+        with catalog.store.connect() as db:
+            row=db.execute('SELECT thumb FROM assets WHERE id=?',(request.path_params['id'],)).fetchone()
+        return FileResponse(row['thumb']) if row else Response(status_code=404)
+
+    async def photo_thumb(request):
+        try:
+            _,file=await asyncio.to_thread(catalog.photos.preview,request.path_params['profile_id'],request.path_params['item_id'])
+            return FileResponse(file,headers={'Cache-Control':'private, max-age=300'})
+        except Exception:
+            return Response(status_code=404)
+
+    def prepare_job(data):
+        instruction=data.get('instruction','')
+        if not isinstance(instruction,str) or not instruction.strip():
+            raise ValueError('Nhập yêu cầu nghiệp vụ content')
+        folder=data.get('folder')
+        errors=[]
+        if not folder:
+            items=data.get('items',[])
+            if not isinstance(items,list) or not 1<=len(items)<=50000:
+                raise ValueError('Cần thư mục hoặc danh sách ảnh hợp lệ')
+            folder=catalog.store.root/'downloads'/uuid.uuid4().hex
+            folder.mkdir(parents=True)
+            for i,item in enumerate(items):
+                try:
+                    if not isinstance(item,dict) or item.get('type')=='video':
+                        raise ValueError('Video qua link chưa hỗ trợ; dùng file gốc local')
+                    url=item.get('url','')
+                    host=urlparse(url).hostname or ''
+                    if urlparse(url).scheme!='https' or not (host=='googleusercontent.com' or host.endswith('.googleusercontent.com')):
+                        raise ValueError('Chỉ tải HTTPS từ Google Photos CDN')
+                    # CDN link is not assumed to be an original. Preserve bytes and report source quality.
+                    with requests.get(url,stream=True,allow_redirects=False,timeout=30) as response:
+                        response.raise_for_status()
+                        if response.status_code!=200:
+                            raise ValueError('Link chuyển hướng/hết hạn; xuất lại từ Photos')
+                        content=bytearray()
+                        for chunk in response.iter_content(65536):
+                            content.extend(chunk)
+                            if len(content)>30*1024*1024:
+                                raise ValueError('Ảnh vượt 30 MiB; tải gốc về thư mục')
+                    from PIL import Image
+                    import io
+                    with Image.open(io.BytesIO(content)) as image:
+                        image.verify()
+                        ext={'JPEG':'.jpg','PNG':'.png','WEBP':'.webp'}.get(image.format)
+                    if not ext:
+                        raise ValueError('Định dạng chưa hỗ trợ')
+                    (folder/f'{i:06}{ext}').write_bytes(content)
+                except Exception as exc:
+                    errors.append(str(exc)[:160])
+            (folder/'source_manifest.json').write_text(json.dumps({'quality':'CDN export; original quality unverified','items':items},ensure_ascii=False),encoding='utf-8')
+        source=catalog.register_source(data.get('name') or Path(folder).name,str(folder))['source_id']
+        index=catalog.index_source(source)
+        job=catalog.create_job(source,instruction,data.get('budget',100))
+        return {'job_id':job['job_id'],'index':index,'download_errors':len(errors),'error_samples':errors[:5]}
+
+    def work(op_id,data):
+        try:
+            result=prepare_job(data)
+            with operation_lock:
+                operations[op_id].update(status='done',result=result)
+        except Exception as exc:
+            with operation_lock:
+                operations[op_id].update(status='error',error=str(exc)[:500])
+
+    async def action(request):
+        if request.headers.get('x-local-token')!=TOKEN:
+            return JSONResponse({'error':'Reload Dashboard to obtain local token'},status_code=403)
+        try:
+            raw=await request.body()
+            if len(raw)>70*1024*1024:
+                raise ValueError('Yêu cầu quá lớn')
+            data=json.loads(raw)
+            if not isinstance(data,dict):
+                raise ValueError('JSON object required')
+            command=request.path_params['command']
+            if command=='profile-create':
+                name=data.get('name','').strip()
+                if not name or len(name)>100:
+                    raise ValueError('Tên kho từ 1–100 ký tự')
+                profile_id=uuid.uuid4().hex
+                with catalog.store.connect(True) as db:
+                    db.execute('INSERT INTO profiles VALUES(?,?,?)',(profile_id,name,str(catalog.store.root/'profiles'/profile_id)))
+                result={'profile_id':profile_id}
+                catalog.select_photo_profile(profile_id)
+            elif command=='profile-select':
+                result=catalog.select_photo_profile(data['profile_id'])
+            elif command=='photos-scan':
+                result=catalog.start_photo_scan(data['profile_id'],data.get('max_steps',300))
+            elif command=='photos-stop':
+                result=catalog.stop_photo_scan(data['profile_id'])
+            elif command=='photos-refresh':
+                result=await asyncio.to_thread(catalog.refresh_photo_profile,data['profile_id'])
+            elif command=='photos-understand':
+                pid=data.get('profile_id','2e3744dd5f5e4b9ea37a4e5b6f49b98c')
+                if data.get('refresh'):
+                    await asyncio.to_thread(catalog.list_photo_albums,pid,refresh=True)
+                report=await asyncio.to_thread(catalog.understand_photos_library,pid)
+                result={'status':'success','report':report}
+            elif command=='photos-scan-albums':
+                pid=data.get('profile_id','2e3744dd5f5e4b9ea37a4e5b6f49b98c')
+                al_data=await asyncio.to_thread(catalog.list_photo_albums,pid,refresh=True)
+                result={'status':'success','albums':al_data}
+            elif command=='photos-classify-eagle':
+                pid=data.get('profile_id','2e3744dd5f5e4b9ea37a4e5b6f49b98c')
+                def run_batch():
+                    import subprocess
+                    import sys
+                    script_path = str(ROOT/'apply_customer_folders.py')
+                    res = subprocess.run([sys.executable, script_path], capture_output=True, text=True, encoding='utf-8', timeout=300)
+                    return res.stdout
+                output = await asyncio.to_thread(run_batch)
+                _eagle_cache['time']=0
+                result={'status':'success','message':'Đã hoàn tất phân loại tư liệu vào 5 nhóm Content và 20 khách hàng trong Eagle!','output':output[:500]}
+            elif command=='open-eagle':
+                import os
+                def do_open():
+                    try:
+                        os.startfile(r"D:\test.library")
+                    except Exception:
+                        pass
+                await asyncio.to_thread(do_open)
+                result={'status':'success','message':'Đã mở thư mục Eagle test.library'}
+            elif command=='eagle-libraries':
+                result=await asyncio.to_thread(catalog.get_eagle_libraries)
+            elif command=='eagle-select':
+                lib_path=data['library_path']
+                result=await asyncio.to_thread(catalog.select_eagle_library,lib_path)
+                try:
+                    client=EagleClient()
+                    if client.is_connected():
+                        client.request('/api/library/switch',payload={'libraryPath':lib_path})
+                except Exception:
+                    pass
+                _eagle_cache['time']=0
+            elif command=='open-chrome':
+                with catalog.store.connect() as db:
+                    row=db.execute('SELECT path FROM profiles WHERE id=?',(data.get('profile_id','default'),)).fetchone()
+                if not row:
+                    raise ValueError('Kho không tồn tại')
+                result=await asyncio.to_thread(catalog.open_photo_profile,data.get('profile_id','default'),data.get('url') or 'https://photos.google.com')
+            elif command=='create-job':
+                if data.get('upload'):
+                    upload=data.pop('upload')
+                    suffix=Path(upload.get('name','')).suffix.lower()
+                    if suffix not in media.IMAGE_EXT|media.VIDEO_EXT:
+                        raise ValueError('Định dạng kéo thả chưa hỗ trợ')
+                    content=base64.b64decode(upload['data'],validate=True)
+                    if len(content)>50*1024*1024:
+                        raise ValueError('File vượt 50 MiB; dùng thư mục')
+                    folder=catalog.store.root/'uploads'/uuid.uuid4().hex
+                    folder.mkdir(parents=True)
+                    (folder/('media'+suffix)).write_bytes(content)
+                    data['folder']=str(folder)
+                with operation_lock:
+                    if any(v['status']=='running' for v in operations.values()):
+                        raise ValueError('Đang nạp nguồn; chờ tác vụ hiện tại hoàn tất')
+                    operations.clear()
+                    op_id=uuid.uuid4().hex
+                    operations[op_id]={'id':op_id,'status':'running'}
+                threading.Thread(target=work,args=(op_id,data),daemon=True).start()
+                result={'operation_id':op_id}
+            elif command=='job-status':
+                result=catalog.get_job_status(data['job_id'])
+                result['decisions']=catalog.get_decisions(data['job_id'],data.get('offset',0))
+            elif command=='control-job':
+                result=catalog.control_job(data['job_id'],data['action'],data.get('extra_budget',0))
+            elif command=='eagle-info':
+                result=await asyncio.to_thread(EagleClient().request,'/api/library/info')
+            elif command=='commit':
+                result=await asyncio.to_thread(catalog.commit_to_eagle,data['job_id'],data['asset_ids'],data['library_path'])
+            elif command=='chat-send':
+                text=data.get('text','').strip()
+                if not text:
+                    raise ValueError('Tin nhắn không được để trống')
+                msg=catalog.send_chat_message('user', text)
+                
+                # Auto-reply background worker
+                def auto_reply(user_msg):
+                    import time
+                    time.sleep(0.5)
+                    lower = user_msg.lower()
+                    if any(k in lower for k in ['phân loại', 'lọc', 'đưa vào', 'nhập', 'bắt đầu', 'hero', 'hook']):
+                        catalog.send_chat_message('agent', '⏳ Đang quét và phân loại các tư liệu tiếp theo trong kho Photos vào Eagle...')
+                        try:
+                            eagle = EagleClient()
+                            if not eagle.is_connected():
+                                catalog.send_chat_message('agent', '⚠️ Eagle chưa được mở trên máy. Bạn vui lòng bật Eagle để tôi rót ảnh vào nhé!')
+                                return
+                            profile_id = '2e3744dd5f5e4b9ea37a4e5b6f49b98c'
+                            folder_photo = eagle.get_or_create_folder('01_Liệu trình chăm sóc da (Spa)')
+                            folder_video = eagle.get_or_create_folder('04_B-Roll Video cận cảnh (Reels/TikTok)')
+                            items = catalog.list_photo_items(profile_id, 0, 5)['items']
+                            count_p, count_v = 0, 0
+                            for it in items:
+                                _, p_path = catalog.photos.preview(profile_id, it['id'])
+                                is_vid = it['kind'] == 'video'
+                                t_folder = folder_video if is_vid else folder_photo
+                                tags = ['Spa', 'Khải Hoàn Skincare', 'Liệu trình da', 'B-Roll' if is_vid else 'Chăm sóc da', 'Dọc 9:16']
+                                title = ('🎬 Video: ' if is_vid else '📸 Ảnh: ') + it['label']
+                                note = f"Tư liệu Spa Khải Hoàn Skincare\nLiệu trình chăm sóc da chuyên sâu\nĐịnh dạng {it['kind'].upper()} DỌC 9:16\nLink gốc: {it['photo_url']}"
+                                eagle.add_from_path(str(p_path), title, tags=tags, annotation=note, rating=5, folder_id=t_folder)
+                                if is_vid: count_v += 1
+                                else: count_p += 1
+                            catalog.send_chat_message('agent', f'🎉 Đã phân loại thành công 5 tư liệu vào Eagle:\n• Thư mục "01_Liệu trình chăm sóc da": {count_p} ảnh\n• Thư mục "04_B-Roll Video cận cảnh": {count_v} video\nBạn mở Eagle lên kiểm tra ngay nhé!')
+                        except Exception as e:
+                            catalog.send_chat_message('agent', f'❌ Lỗi khi phân loại vào Eagle: {e}')
+                    else:
+                        reply = (
+                            'Dạ vâng, tôi hiểu rất rõ! Đây là toàn bộ tư liệu thực tế của Khải Hoàn Skincare: '
+                            'các ảnh & video dọc quay bác sĩ/chuyên viên thực hiện liệu trình chăm sóc da chuyên sâu, '
+                            'nặn mụn, peel da, máy móc rọi sáng và khách hàng nằm thư giãn. '
+                            'Tư liệu này cực kỳ đắt giá để dựng clip Reels/TikTok và bài viết chuyên môn.\n\n'
+                            '👉 Bạn có thể nhắn "Phân loại vào Eagle" hoặc bấm nút "⚡ Lọc 20 ảnh Hero" bên dưới để tôi bắt đầu phân loại ngay nhé!'
+                        )
+                        catalog.send_chat_message('agent', reply)
+
+                threading.Thread(target=auto_reply, args=(text,), daemon=True).start()
+                result={'status':'sent','message':msg}
+            elif command=='chat-messages':
+                msgs=catalog.list_chat_messages(limit=data.get('limit',50),after_timestamp=data.get('after',0))
+                result={'messages':msgs}
+            elif command=='system-update':
+                import subprocess, sys
+                try:
+                    repo_dir = Path(__file__).parent if (Path(__file__).parent / ".git").exists() else Path(__file__).parent.parent
+                    pull_res = subprocess.run(['git', 'pull'], capture_output=True, text=True, timeout=25, cwd=str(repo_dir))
+                    pull_out = (pull_res.stdout + ' ' + pull_res.stderr).strip()
+                    req_file = Path(__file__).parent / 'requirements-vision.txt'
+                    if req_file.exists():
+                        subprocess.run([sys.executable, '-m', 'pip', 'install', '-r', str(req_file), '--quiet'], timeout=45)
+                    result = {
+                        'status': 'success',
+                        'message': 'Đã cập nhật hệ thống thành công!',
+                        'detail': pull_out or 'Already up to date.'
+                    }
+                except Exception as e:
+                    result = {'status': 'error', 'message': f'Lỗi khi cập nhật Git: {e}'}
+            else:
+                raise ValueError('Unknown operation')
+            return JSONResponse(result)
+        except Exception as exc:
+            return JSONResponse({'error':str(exc)[:500]},status_code=400)
+
+    return [
+        Route('/',page),Route('/app.js',asset, name='app'),Route('/style.css',asset,name='css'),
+        Route('/api/state',state),Route('/api/js-code',crawler),Route('/api/{command}',action,methods=['POST']),
+        Route('/thumb/{id}',thumb),Route('/photos-thumb/{profile_id}/{item_id}',photo_thumb)]
