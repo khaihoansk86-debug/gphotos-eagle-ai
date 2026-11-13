@@ -1,0 +1,44 @@
+======================================================================
+  🌿 HƯỚNG DẪN SỬ DỤNG NHANH CHO NGƯỜI MỚI (WINDOWS & MAC)
+  Hệ Thống Phân Loại & Tạo Brief Content Khải Hoàn Skincare ✕ Eagle DAM
+======================================================================
+
+Chào bạn! Thư mục này chứa toàn bộ công cụ tự động phân loại ảnh/video từ Google Photos
+sang Eagle DAM, tự động phân tích góc máy, tạo Hook 3s TikTok và hướng dẫn dựng CapCut.
+
+Bạn KHÔNG CẦN biết lập trình, chỉ cần làm đúng 3 bước theo số thứ tự file:
+
+----------------------------------------------------------------------
+👉 BƯỚC 1: ĐĂNG NHẬP GOOGLE PHOTOS (Chỉ cần làm 1 lần đầu)
+----------------------------------------------------------------------
+  - Trên Windows: Nhấp đúp chuột vào file: 1_Dang_Nhap_Google_Photos.bat
+  - Trên Mac:     Nhấp đúp chuột vào file: 1_Dang_Nhap_Google_Photos.command
+
+  -> Cửa sổ Google Chrome độc lập sẽ mở lên. Bạn hãy đăng nhập tài khoản Google Photos 
+     chứa ảnh của Spa. Sau khi đăng nhập xong, lần sau không cần làm lại bước này.
+
+----------------------------------------------------------------------
+👉 BƯỚC 2: MỞ DASHBOARD LÀM VIỆC
+----------------------------------------------------------------------
+  - Hãy chắc chắn bạn ĐÃ BẬT ỨNG DỤNG EAGLE trên máy.
+  - Sau đó nhấp đúp vào:
+    + Trên Windows: 2_Mo_Dashboard_Lam_Viec.bat
+    + Trên Mac:     2_Mo_Dashboard_Lam_Viec.command
+
+  -> Trình duyệt sẽ tự động mở Dashboard macOS tại địa chỉ: http://127.0.0.1:8899
+     Tại đây bạn có thể theo dõi tiến độ, đổi thư viện Eagle, hoặc chat trực tiếp 
+     với AI để yêu cầu phân loại, lọc ảnh nét (Hero), hoặc viết nội dung!
+
+----------------------------------------------------------------------
+👉 BƯỚC 3: CẬP NHẬT TÍNH NĂNG MỚI (Mỗi khi có thông báo bản mới)
+----------------------------------------------------------------------
+  - Cách 1: Bấm nút "🔄 Cập nhật" ở góc trên bên phải Dashboard.
+  - Cách 2: Nhấp đúp vào file:
+    + Trên Windows: 3_Cap_Nhat_Phien_Ban_Moi.bat
+    + Trên Mac:     3_Cap_Nhat_Phien_Ban_Moi.command
+
+  -> Tool sẽ tự động kéo các tính năng và ngành hàng mới nhất về trong 2 giây!
+
+======================================================================
+Chúc bạn có những trải nghiệm sản xuất content thật hiệu quả và nhanh chóng!
+======================================================================
