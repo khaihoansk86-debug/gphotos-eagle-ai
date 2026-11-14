@@ -22,7 +22,7 @@ class EagleClient:
     def is_connected(self) -> bool:
         """Check if Eagle is running and listening on localhost:41595"""
         try:
-            res = requests.get(f"{self.base_url}/api/application/info", timeout=1.5)
+            res = requests.get(f"{self.base_url}/api/application/info", timeout=0.3)
             if res.status_code == 200:
                 data = res.json()
                 return data.get("status") == "success"

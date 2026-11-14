@@ -38,7 +38,7 @@ def routes(catalog):
 
     def get_eagle_snapshot():
         now=time.time()
-        if now-_eagle_cache['time']<10 and _eagle_cache['folders']:
+        if now-_eagle_cache['time']<8 and _eagle_cache['time'] > 0:
             return _eagle_cache['ok'],_eagle_cache['folders'],_eagle_cache['info'],_eagle_cache['libraries']
         client=EagleClient()
         eagle_ok=client.is_connected()

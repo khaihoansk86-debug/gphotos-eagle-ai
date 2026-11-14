@@ -104,8 +104,13 @@ class Catalog:
     def get_eagle_libraries(self):
         import ntpath
         client=EagleClient()
-        info=client.request('/api/library/info') or {}
-        history=client.request('/api/library/history') or []
+        if not client.is_connected():
+            return {'libraries':[],'current':{},'selected_path':''}
+        try:
+            info=client.request('/api/library/info') or {}
+            history=client.request('/api/library/history') or []
+        except Exception:
+            info, history = {}, []
         current=info.get('library',{})
         libraries={}
         for path in history:
