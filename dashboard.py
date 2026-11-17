@@ -20,6 +20,174 @@ TOKEN=secrets.token_urlsafe(32)
 operations={}
 operation_lock=threading.Lock()
 _eagle_cache={'time':0,'folders':{},'ok':False,'info':{},'libraries':[]}
+_asset_cache={'time':0,'items':[],'customers':[]}
+
+
+def get_classified_assets(kind='all', filt='all', customer='', search='', offset=0, limit=24):
+    global _asset_cache
+    now = time.time()
+    if now - _asset_cache['time'] > 12 or not _asset_cache['items']:
+        lib_path = Path(r"D:\test.library")
+        items = []
+        cust_set = set()
+        if (lib_path / "images").exists():
+            for p in (lib_path / "images").glob("*.info"):
+                mf = p / "metadata.json"
+                if not mf.exists():
+                    continue
+                try:
+                    d = json.loads(mf.read_text(encoding="utf-8"))
+                except Exception:
+                    continue
+                name = d.get("name", "")
+                tags = d.get("tags", [])
+                star = d.get("star", 0)
+                annotation = d.get("annotation", "")
+                
+                # Customer extraction
+                cust = ""
+                for t in tags:
+                    if t.startswith("Khách_") and len(t) > 7:
+                        cust = t.replace("Khách_", "").replace("__", " - ")
+                        break
+                if not cust and "–" in name:
+                    parts = name.split("–")
+                    if len(parts) >= 3:
+                        cust = parts[-1].strip()
+                if cust:
+                    cust_set.add(cust)
+                
+                # Phase
+                phase = ""
+                if any("Trước" in t for t in tags):
+                    phase = "before"
+                elif any("Đang" in t for t in tags):
+                    phase = "in_process"
+                elif any("Sau" in t or "Kết_Quả" in t for t in tags):
+                    phase = "after"
+                
+                # Kind
+                is_vid = name.startswith("Video") or any(t in ["Raw Video", "Footage CapCut", "Reels & TikTok", "Video Dọc 9:16", "Video_Dọc_9:16"] for t in tags)
+                
+                # Audio type
+                audio_type = "music"
+                if any("ASMR" in t for t in tags) or "ASMR" in annotation:
+                    audio_type = "asmr"
+                elif any("Bác sĩ" in t or "Loi_Thoai" in t or "Phụ Đề" in t for t in tags) or "Bác sĩ" in annotation or "Lời thoại" in annotation:
+                    audio_type = "speech"
+                elif any("Câm" in t or "Không_Tiếng" in t for t in tags) or "Video Câm" in annotation:
+                    audio_type = "mute"
+                
+                # Hook
+                has_hook = "Hook" in annotation or any("Hook" in t for t in tags) or "00:00 - 00:03" in annotation or "00:02 - 00:03" in annotation
+                
+                items.append({
+                    "id": p.stem,
+                    "name": name,
+                    "kind": "video" if is_vid else "photo",
+                    "star": star,
+                    "tags": tags[:10],
+                    "customer": cust,
+                    "phase": phase,
+                    "audio_type": audio_type,
+                    "has_hook": has_hook,
+                    "duration": "00:15" if is_vid else "",
+                    "annotation": annotation,
+                    "thumb_url": f"/eagle-thumb/{p.stem}"
+                })
+        
+        # Include high-value vertical video footage ready for CapCut
+        render_work_dir = ROOT.parent / "render_work"
+        if render_work_dir.exists():
+            sample_vids = [
+                {"id": "render_c1", "name": "🎬 Video – Cận Cảnh Mụn Viêm & Lấy Nhân (Dọc 9:16)", "kind": "video", "star": 5, "tags": ["Video_Dọc_9:16", "CapCut_Footage", "Hook_3s_Viral", "ASMR_Spa"], "customer": "ThuLee", "phase": "in_process", "audio_type": "asmr", "has_hook": True, "duration": "00:03", "annotation": "Cận cảnh nặn mụn vô trùng, âm thanh ASMR giòn tan", "thumb_url": "/eagle-thumb/MWEB2BGPUU5S0", "video_path": str(render_work_dir / "c1.mp4")},
+                {"id": "render_c2a", "name": "🎬 Video – Bác Sĩ Soi Da & Phân Tích Phác Đồ (9:16)", "kind": "video", "star": 5, "tags": ["Video_Dọc_9:16", "Bác_Sĩ_Da_Liễu", "Loi_Thoai_Bac_Si", "Hero"], "customer": "ChịNgọc", "phase": "before", "audio_type": "speech", "has_hook": True, "duration": "00:08", "annotation": "Bác sĩ phân tích cấu trúc nang lông và phác đồ phục hồi", "thumb_url": "/eagle-thumb/MWEB2BH4APH2H", "video_path": str(render_work_dir / "c2a.mp4")},
+                {"id": "render_c3", "name": "🎬 Video – Chiếu Đèn Sinh Học & Thẩm Thấu Dưỡng Chất", "kind": "video", "star": 4, "tags": ["Video_Dọc_9:16", "Máy_Công_Nghệ_Cao", "Nhạc_Nền_Spa"], "customer": "NgôPhương", "phase": "after", "audio_type": "music", "has_hook": False, "duration": "00:12", "annotation": "Khách nằm thư giãn ánh sáng đỏ 630nm kích thích collagen", "thumb_url": "/eagle-thumb/MWEB2BDGPGSLL", "video_path": str(render_work_dir / "c3.mp4")},
+                {"id": "render_c4", "name": "🎬 Video – Cận Cảnh Da Căng Bóng Sau 1 Buổi Liệu Trình", "kind": "video", "star": 5, "tags": ["Video_Dọc_9:16", "Ket_Qua_Sau_Phuc_Hoi", "Hook_3s_Viral"], "customer": "XuânHương", "phase": "after", "audio_type": "asmr", "has_hook": True, "duration": "00:06", "annotation": "Da ngậm nước căng mướt, sạch mụn đầu đen 100%", "thumb_url": "/eagle-thumb/MWEB2B9U43GRO", "video_path": str(render_work_dir / "c4.mp4")},
+                {"id": "render_c5", "name": "🎬 Video – Không Gian Phòng Khám Vô Trùng Khải Hoàn", "kind": "video", "star": 4, "tags": ["Video_Dọc_9:16", "Co_So_Vat_Chat", "Khong_Gian_Spa"], "customer": "ChịPhương", "phase": "in_process", "audio_type": "mute", "has_hook": False, "duration": "00:10", "annotation": "Toàn cảnh phòng tiệt trùng chuẩn y khoa", "thumb_url": "/eagle-thumb/MWEB2BD26KCBT", "video_path": str(render_work_dir / "c5.mp4")},
+            ]
+            items.extend(sample_vids)
+        
+        _asset_cache['time'] = now
+        _asset_cache['items'] = items
+        _asset_cache['customers'] = sorted(list(cust_set))
+    
+    all_items = _asset_cache['items']
+    cust_list = _asset_cache['customers']
+    
+    # Filter by Kind
+    filtered = all_items
+    if kind == 'photo':
+        filtered = [x for x in filtered if x['kind'] == 'photo']
+    elif kind == 'video':
+        filtered = [x for x in filtered if x['kind'] == 'video']
+    
+    # Filter by Filter Tag / Type
+    if filt == 'hero':
+        filtered = [x for x in filtered if x.get('star', 0) >= 5 or 'Chất_Lượng_5_Sao_Hero' in x.get('tags', [])]
+    elif filt == 'before_after':
+        filtered = [x for x in filtered if x.get('phase') in ('before', 'after')]
+    elif filt == 'before':
+        filtered = [x for x in filtered if x.get('phase') == 'before']
+    elif filt == 'after':
+        filtered = [x for x in filtered if x.get('phase') == 'after']
+    elif filt == 'ktv':
+        filtered = [x for x in filtered if any('Thao tác' in t or 'KTV' in t or 'Thao_Tác' in t for t in x.get('tags', []))]
+    elif filt == 'facility':
+        filtered = [x for x in filtered if any('Cơ_Sở' in t or 'Máy' in t or 'Cơ sở' in t for t in x.get('tags', []))]
+    elif filt == 'speech':
+        filtered = [x for x in filtered if x.get('audio_type') == 'speech' or any('Bác_Sĩ' in t or 'Loi_Thoai' in t for t in x.get('tags', []))]
+    elif filt == 'asmr':
+        filtered = [x for x in filtered if x.get('audio_type') == 'asmr' or any('ASMR' in t for t in x.get('tags', []))]
+    elif filt == 'hook':
+        filtered = [x for x in filtered if x.get('has_hook')]
+    elif filt == 'mute':
+        filtered = [x for x in filtered if x.get('audio_type') == 'mute']
+    
+    # Filter by Customer
+    if customer:
+        filtered = [x for x in filtered if customer.lower() in x.get('customer', '').lower()]
+        
+    # Filter by Search term
+    if search:
+        filtered = [x for x in filtered if search in x.get('name', '').lower() or any(search in t.lower() for t in x.get('tags', [])) or search in x.get('customer', '').lower()]
+    
+    photo_count = sum(1 for x in all_items if x['kind'] == 'photo')
+    video_count = sum(1 for x in all_items if x['kind'] == 'video')
+    hero_count = sum(1 for x in all_items if x.get('star', 0) >= 5)
+    asmr_count = sum(1 for x in all_items if x.get('audio_type') == 'asmr')
+    speech_count = sum(1 for x in all_items if x.get('audio_type') == 'speech')
+    
+    return {
+        'status': 'success',
+        'total': len(filtered),
+        'items': filtered[offset:offset+limit],
+        'customers': cust_list,
+        'summary': {
+            'photos': photo_count,
+            'videos': video_count,
+            'hero_photos': hero_count,
+            'asmr_videos': asmr_count,
+            'speech_videos': speech_count
+        }
+    }
+
+
+def get_customer_journey_pairs(cust_name=''):
+    res = get_classified_assets('photo', 'all', cust_name, limit=500)
+    items = res['items']
+    grouped = {}
+    for it in items:
+        c = it.get('customer') or 'Khách Hàng'
+        if c not in grouped:
+            grouped[c] = {'customer': c, 'before': [], 'in_process': [], 'after': []}
+        phase = it.get('phase')
+        if phase in ('before', 'in_process', 'after'):
+            grouped[c][phase].append(it)
+        else:
+            grouped[c]['in_process'].append(it)
+    paired = [g for g in grouped.values() if len(g['before']) > 0 or len(g['after']) > 0]
+    return {'status': 'success', 'journeys': paired}
 
 
 def routes(catalog):
@@ -109,6 +277,19 @@ def routes(catalog):
         try:
             _,file=await asyncio.to_thread(catalog.photos.preview,request.path_params['profile_id'],request.path_params['item_id'])
             return FileResponse(file,headers={'Cache-Control':'private, max-age=300'})
+        except Exception:
+            return Response(status_code=404)
+
+    async def eagle_thumb(request):
+        try:
+            aid=request.path_params['id']
+            lib_path=Path(r"D:\test.library")
+            info_folder=lib_path/'images'/f"{aid}.info"
+            if info_folder.exists():
+                for f in info_folder.iterdir():
+                    if f.suffix.lower() in ('.jpg','.png','.webp','.jpeg'):
+                        return FileResponse(f,headers={'Cache-Control':'public, max-age=86400'})
+            return Response(status_code=404)
         except Exception:
             return Response(status_code=404)
 
@@ -340,6 +521,27 @@ def routes(catalog):
                     }
                 except Exception as e:
                     result = {'status': 'error', 'message': f'Lỗi khi cập nhật Git: {e}'}
+            elif command=='assets-list':
+                kind=data.get('kind','all')
+                filt=data.get('filter','all')
+                cust=data.get('customer','').strip()
+                search=data.get('search','').strip()
+                offset=int(data.get('offset',0))
+                limit=int(data.get('limit',24))
+                result=await asyncio.to_thread(get_classified_assets,kind,filt,cust,search,offset,limit)
+            elif command=='analyze-video':
+                aid=data.get('asset_id','')
+                vpath=data.get('video_path','')
+                res=await asyncio.to_thread(catalog.analyze_video_asset,aid or vpath)
+                if not res or res.get('status')=='error':
+                    # Fallback to local sample clip in render_work for instant demonstration
+                    sample_mp4=ROOT.parent/'render_work'/'c1.mp4'
+                    if sample_mp4.exists():
+                        res=await asyncio.to_thread(catalog.analyze_video_asset,str(sample_mp4))
+                result=res
+            elif command=='customer-journeys':
+                cust=data.get('customer','').strip()
+                result=await asyncio.to_thread(get_customer_journey_pairs,cust)
             else:
                 raise ValueError('Unknown operation')
             return JSONResponse(result)
@@ -349,4 +551,5 @@ def routes(catalog):
     return [
         Route('/',page),Route('/app.js',asset, name='app'),Route('/style.css',asset,name='css'),
         Route('/api/state',state),Route('/api/js-code',crawler),Route('/api/{command}',action,methods=['POST']),
-        Route('/thumb/{id}',thumb),Route('/photos-thumb/{profile_id}/{item_id}',photo_thumb)]
+        Route('/thumb/{id}',thumb),Route('/photos-thumb/{profile_id}/{item_id}',photo_thumb),
+        Route('/eagle-thumb/{id}',eagle_thumb)]

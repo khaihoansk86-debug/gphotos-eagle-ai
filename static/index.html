@@ -217,6 +217,191 @@
       </div>
     </div>
 
+    <!-- 3. DUAL WORKFLOW MANAGEMENT: PHOTO STUDIO & VIDEO REELS -->
+    <section class="workflow-section">
+      <div class="workflow-header-row">
+        <div class="workflow-segmented-control" role="tablist">
+          <button id="tabPhotoWorkflow" class="workflow-tab active" role="tab" aria-selected="true" data-mode="photo">
+            <span class="workflow-tab-icon">📸</span>
+            <div class="workflow-tab-text">
+              <strong class="workflow-tab-title">Nghiệp Vụ Hình Ảnh</strong>
+              <span class="workflow-tab-desc">Lọc Hero 5⭐ · Cặp Trước/Sau (Before-After) · Case Studies</span>
+            </div>
+            <span class="workflow-tab-count" id="badgePhotoCount">629</span>
+          </button>
+          <button id="tabVideoWorkflow" class="workflow-tab" role="tab" aria-selected="false" data-mode="video">
+            <span class="workflow-tab-icon">🎬</span>
+            <div class="workflow-tab-text">
+              <strong class="workflow-tab-title">Nghiệp Vụ Video & Reels</strong>
+              <span class="workflow-tab-desc">Tua Nhanh 5s · Bóc Phụ Đề Whisper · Hook 3s Viral · CapCut</span>
+            </div>
+            <span class="workflow-tab-count" id="badgeVideoCount">507</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- WORKSPACE 1: PHOTO WORKFLOW -->
+      <div id="photoWorkspace" class="workflow-workspace">
+        <!-- Sub-Toolbar & Filter Chips -->
+        <div class="sub-toolbar">
+          <div class="filter-chips-scroll" id="photoFilterChips">
+            <button class="filter-chip active" data-filter="all">🌟 Tất cả ảnh</button>
+            <button class="filter-chip" data-filter="hero">⭐ 5 Sao Hero</button>
+            <button class="filter-chip" data-filter="before_after">🔄 Cặp Before/After</button>
+            <button class="filter-chip" data-filter="ktv">💆‍♀️ Thao tác KTV chuẩn</button>
+            <button class="filter-chip" data-filter="facility">🏥 Cơ sở & Công nghệ</button>
+            <button class="filter-chip" data-filter="before">🔵 Trước điều trị</button>
+            <button class="filter-chip" data-filter="after">🟢 Sau phục hồi</button>
+          </div>
+          <div class="sub-toolbar-controls">
+            <select id="photoCustomerFilter" class="toolbar-select">
+              <option value="">👤 Tất cả khách hàng (107 hồ sơ)</option>
+            </select>
+            <input type="text" id="photoSearchInput" class="toolbar-search" placeholder="🔍 Tìm kiếm ảnh, tag, KH...">
+            <button id="btnQuickHero" class="macos-btn-accent-sm" title="Lọc nhanh 20 ảnh Hero đẹp nhất để làm truyền thông">
+              ⚡ Lọc 20 Hero
+            </button>
+          </div>
+        </div>
+
+        <!-- Photo Grid Header Meta -->
+        <div class="grid-header-meta">
+          <span id="photoGridCount">Đang tải kho ảnh tư liệu...</span>
+          <div class="meta-legend">
+            <span><span class="legend-dot dot-before"></span> Trước điều trị</span>
+            <span><span class="legend-dot dot-inprocess"></span> Đang làm</span>
+            <span><span class="legend-dot dot-after"></span> Sau phục hồi</span>
+          </div>
+        </div>
+
+        <!-- Photo Grid Container -->
+        <div id="photoGrid" class="asset-grid">
+          <!-- Dynamically populated by app.js -->
+        </div>
+
+        <div class="grid-footer">
+          <button id="btnLoadMorePhotos" class="macos-btn macos-btn-secondary">Tải thêm ảnh tư liệu ⬇</button>
+        </div>
+      </div>
+
+      <!-- WORKSPACE 2: VIDEO WORKFLOW -->
+      <div id="videoWorkspace" class="workflow-workspace" style="display:none;">
+        <!-- Sub-Toolbar & Filter Chips -->
+        <div class="sub-toolbar">
+          <div class="filter-chips-scroll" id="videoFilterChips">
+            <button class="filter-chip active" data-filter="all">🎬 Tất cả video studio</button>
+            <button class="filter-chip" data-filter="speech">🗣️ Có phụ đề Whisper</button>
+            <button class="filter-chip" data-filter="asmr">🎧 Âm thanh ASMR (>4.5kHz)</button>
+            <button class="filter-chip" data-filter="hook">🔥 Hook 3s Giữ Chân</button>
+            <button class="filter-chip" data-filter="hero">⭐ 5 Sao Hero Reels</button>
+            <button class="filter-chip" data-filter="mute">🔇 Câm (Cần BGM)</button>
+          </div>
+          <div class="sub-toolbar-controls">
+            <input type="text" id="videoSearchInput" class="toolbar-search" placeholder="🔍 Tìm clip, kịch bản, âm thanh...">
+            <button id="btnAnalyzeAllVideos" class="macos-btn-accent-sm" title="Bóc phụ đề Whisper và lập bản đồ 5s keyframe">
+              ✨ Bóc Phụ Đề AI
+            </button>
+          </div>
+        </div>
+
+        <!-- Video Grid Header Meta -->
+        <div class="grid-header-meta">
+          <span id="videoGridCount">Đang tải video studio...</span>
+          <div class="meta-legend">
+            <span class="badge-pill-inline badge-speech">🗣️ Lời thoại</span>
+            <span class="badge-pill-inline badge-asmr">🎧 ASMR</span>
+            <span class="badge-pill-inline badge-music">🎵 BGM</span>
+            <span class="badge-pill-inline badge-mute">🔇 Câm</span>
+          </div>
+        </div>
+
+        <!-- Video Grid Container -->
+        <div id="videoGrid" class="asset-grid">
+          <!-- Dynamically populated by app.js -->
+        </div>
+
+        <div class="grid-footer">
+          <button id="btnLoadMoreVideos" class="macos-btn macos-btn-secondary">Tải thêm video ⬇</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. macOS VIDEO INSPECTOR DRAWER (SLIDE-OUT INTEL PANE) -->
+    <div id="videoDrawerBackdrop" class="drawer-backdrop" style="display:none;"></div>
+    <aside id="videoInspectorDrawer" class="inspector-drawer" style="display:none;">
+      <div class="drawer-header">
+        <div class="drawer-header-info">
+          <h3 id="drawerVideoTitle" class="drawer-title">Phân tích Video Studio</h3>
+          <div class="drawer-badges-row">
+            <span id="drawerBadgeRatio" class="drawer-pill pill-ratio">📐 9:16 Vertical TikTok</span>
+            <span id="drawerBadgeDuration" class="drawer-pill pill-duration">⏱️ 00:15</span>
+            <span id="drawerBadgeAudio" class="drawer-pill pill-audio">🎧 ASMR Spa</span>
+            <span id="drawerBadgeStars" class="drawer-pill pill-stars">⭐⭐⭐⭐⭐</span>
+          </div>
+        </div>
+        <button id="btnCloseDrawerBtn" class="drawer-close-pill">✕ Đóng</button>
+      </div>
+
+      <div class="drawer-body">
+        <!-- Section 1: 5s / 10s Timeline Scrubber Strip -->
+        <section class="drawer-section">
+          <div class="section-title-row">
+            <h4 class="section-heading">
+              <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              Tua Nhanh 5 Giây / Cảnh (Keyframe Timeline Scrubbing)
+            </h4>
+            <span class="section-subtext">Nắm bắt toàn bộ clip trong 3 giây</span>
+          </div>
+          <div id="drawerTimelineScrub" class="timeline-scrub-strip">
+            <!-- Timeline interval cards loaded dynamically -->
+          </div>
+        </section>
+
+        <!-- Section 2: Faster-Whisper Speech & Audio Analysis -->
+        <section class="drawer-section">
+          <div class="section-title-row">
+            <h4 class="section-heading">
+              <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+              Bóc Lời Thoại & Phụ Đề AI (Faster-Whisper)
+            </h4>
+            <button id="btnCopyTranscript" class="macos-btn-outline-sm">📋 Copy Lời Thoại</button>
+          </div>
+          <div id="drawerWhisperBox" class="whisper-transcript-box">
+            <!-- Speech transcripts loaded dynamically -->
+          </div>
+        </section>
+
+        <!-- Section 3: CapCut Golden Moment 3s Hook Box -->
+        <section class="drawer-section">
+          <div class="section-title-row">
+            <h4 class="section-heading">
+              <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              Khúc Hay Nhất (Golden Moment) & Chỉ Dẫn Dựng CapCut
+            </h4>
+            <button id="btnCopyCapCutRecipe" class="macos-btn-primary-sm">📋 Copy Chỉ Dẫn CapCut</button>
+          </div>
+          <div id="drawerCapCutBox" class="capcut-recipe-card">
+            <!-- Instructions and hook loaded dynamically -->
+          </div>
+        </section>
+      </div>
+    </aside>
+
+    <!-- 5. INTERACTIVE BEFORE / AFTER COMPARISON MODAL -->
+    <div id="beforeAfterModalBackdrop" class="drawer-backdrop" style="display:none;"></div>
+    <div id="beforeAfterModal" class="comparison-modal" style="display:none;">
+      <div class="comparison-header">
+        <div>
+          <h3 class="drawer-title" id="baCustomerName">Hồ sơ ca điều trị: Thu Lee</h3>
+          <span class="drawer-subtext" style="font-size:12px;color:var(--text-muted);">Đối chiếu kết quả Trước ➔ Sau liệu trình phục hồi da chuyên sâu</span>
+        </div>
+        <button id="btnCloseBAModal" class="drawer-close-pill">✕ Đóng</button>
+      </div>
+      <div class="comparison-body" id="baComparisonBody">
+        <!-- Side by side comparison cards loaded dynamically -->
+      </div>
+    </div>
+
     <!-- ALERT TOAST -->
     <div id="message" role="status" aria-live="polite"></div>
 
@@ -224,6 +409,6 @@
 
 </div>
 
-<script src="/app.js?v=20261113-clean"></script>
+<script src="/app.js?v=20261117-dual"></script>
 </body>
 </html>
