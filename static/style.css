@@ -1189,6 +1189,60 @@ body {
 }
 
 /* ==========================================================================
+   EXECUTIVE STATUS STRIP (THÔNG TIN ĐỒNG BỘ TINH GỌN)
+   ========================================================================== */
+
+.executive-status-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 14px;
+  padding: 10px 18px;
+  font-size: 13px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.status-chip-group {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.status-info-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+}
+
+.chip-label {
+  color: var(--text-muted);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.chip-val {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.chip-ai {
+  margin-left: auto;
+  background: rgba(45, 212, 191, 0.12);
+  border: 1px solid rgba(45, 212, 191, 0.28);
+  border-radius: 20px;
+  padding: 3px 12px;
+  color: #5eead4;
+}
+
+/* ==========================================================================
    DUAL WORKFLOW MANAGEMENT: PHOTO STUDIO & VIDEO REELS
    ========================================================================== */
 

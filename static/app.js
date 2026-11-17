@@ -618,17 +618,20 @@ async function refresh() {
     const pCount = curInv.photo !== undefined ? curInv.photo : 629;
     const vCount = curInv.video !== undefined ? curInv.video : 507;
 
-    // Avatar & Name
+    // Avatar & Name & Status Strip Info
     if (curStatus.avatar_url && $('hubPhotosAvatar')) {
       $('hubPhotosAvatar').src = curStatus.avatar_url;
       $('hubPhotosAvatar').style.display = 'block';
       if ($('hubPhotosFallback')) $('hubPhotosFallback').style.display = 'none';
     }
-    if (curStatus.account_label) {
-      const parts = curStatus.account_label.split('\n');
-      const name = parts[0]?.replace('Tài khoản Google:', '')?.trim() || 'Le Khanh';
-      if ($('hubPhotosAccountName')) $('hubPhotosAccountName').textContent = name;
-      if ($('hubPhotosAccountEmail')) $('hubPhotosAccountEmail').textContent = curStatus.account_key || 'khaihoansk86@gmail.com';
+    const accEmail = curStatus.account_key || 'khaihoansk86@gmail.com';
+    const accName = curStatus.account_label ? curStatus.account_label.split('\n')[0].replace('Tài khoản Google:', '').trim() : 'Le Khanh';
+    if ($('hubPhotosAccountName')) $('hubPhotosAccountName').textContent = accName;
+    if ($('hubPhotosAccountEmail')) $('hubPhotosAccountEmail').textContent = accEmail;
+    
+    // Executive Status Strip
+    if ($('hubAccountDisplay')) {
+      $('hubAccountDisplay').textContent = `${accName} (${accEmail})`;
     }
 
     // Status pill
@@ -644,20 +647,14 @@ async function refresh() {
       $('hubPhotosScanStatus').textContent = `Đã rà soát ${state.albums_count || 98} Album khách hàng · Tỷ lệ video dọc 83.5%`;
     }
 
-    // Profile Dropdown
-    const pSel = $('profileSelect');
-    if (pSel && state.profiles) {
-      const currentVal = pSel.value || currentProfile;
-      pSel.innerHTML = state.profiles.map(p => 
-        `<option value="${p.id}" ${p.id === currentVal ? 'selected' : ''}>${p.name} (${p.id === currentProfile ? '1.136 ảnh/video' : 'Phụ'})</option>`
-      ).join('');
-    }
-
-    // 3. Eagle DAM Hub Card
+    // 3. Eagle DAM Info & Status Strip
     const eagleInfo = state.eagle_info || {};
     const activeLibName = eagleInfo.name ? (eagleInfo.name + '.library') : 'test.library';
     const activeLibPath = eagleInfo.path || 'D:\\test.library';
 
+    if ($('hubEagleDisplay')) {
+      $('hubEagleDisplay').textContent = `${activeLibName} (${activeLibPath})`;
+    }
     if ($('hubEagleActiveName')) $('hubEagleActiveName').textContent = activeLibName;
     if ($('hubEagleActivePath')) {
       $('hubEagleActivePath').textContent = 'Đường dẫn: ' + activeLibPath;
@@ -761,27 +758,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
   }
 
-  // 8. Quick Hero Filter Button
-  const btnHero = $('btnQuickHero');
-  if (btnHero) {
-    btnHero.onclick = () => {
-      document.querySelectorAll('#photoFilterChips .filter-chip').forEach(b => {
-        b.classList.toggle('active', b.dataset.filter === 'hero');
-      });
-      photoFilter = 'hero';
-      message('⚡ Đang lọc 20 ảnh Hero 5 sao nét nhất cho chiến dịch...');
-      loadPhotos(true);
-    };
-  }
-
-  // 9. Load More Buttons
+  // 8. Load More Buttons
   const btnMoreP = $('btnLoadMorePhotos');
   if (btnMoreP) btnMoreP.onclick = () => loadPhotos(false);
 
   const btnMoreV = $('btnLoadMoreVideos');
   if (btnMoreV) btnMoreV.onclick = () => loadVideos(false);
 
-  // 10. Drawer Close Buttons
+  // 9. Drawer Close Buttons
   const btnCloseD = $('btnCloseDrawerBtn');
   const btnCloseTl = $('btnCloseDrawer');
   const backdropD = $('videoDrawerBackdrop');
@@ -789,13 +773,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (btnCloseTl) btnCloseTl.onclick = closeDrawer;
   if (backdropD) backdropD.onclick = closeDrawer;
 
-  // 11. Modal Close Buttons
+  // 10. Modal Close Buttons
   const btnCloseM = $('btnCloseBAModal');
   const backdropM = $('beforeAfterModalBackdrop');
   if (btnCloseM) btnCloseM.onclick = closeBeforeAfterModal;
   if (backdropM) backdropM.onclick = closeBeforeAfterModal;
 
-  // 12. Copy Transcript Button
+  // 11. Copy Transcript Button
   const btnCopyTr = $('btnCopyTranscript');
   if (btnCopyTr) {
     btnCopyTr.onclick = () => {
@@ -810,7 +794,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
   }
 
-  // 13. Copy CapCut Recipe Button
+  // 12. Copy CapCut Recipe Button
   const btnCopyCp = $('btnCopyCapCutRecipe');
   if (btnCopyCp) {
     btnCopyCp.onclick = () => {
@@ -822,80 +806,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
   }
 
-  // 14. Analyze All Videos Button
-  const btnAnalyzeAll = $('btnAnalyzeAllVideos');
-  if (btnAnalyzeAll) {
-    btnAnalyzeAll.onclick = () => {
-      message('✨ Đang kích hoạt phân tích AI timeline 5s cho toàn bộ clip...');
-      setTimeout(() => {
-        message('🎉 Đã hoàn tất lập bản đồ timeline 5s & bóc phụ đề!');
-        loadVideos(true);
-      }, 1500);
-    };
-  }
-
-  // 15. Action Buttons (Profile & Eagle sync)
-  const btnSync = $('btnSyncEagle');
-  if (btnSync) {
-    btnSync.onclick = async () => {
-      btnSync.disabled = true;
-      setActionStatus(true, '⚡ AI đang phân loại tư liệu vào 5 nhóm nội dung và 20 khách hàng Eagle... Vui lòng đợi trong giây lát');
-      try {
-        const res = await api('photos-classify-eagle', { profile_id: currentProfile });
-        message('🎉 ' + (res.message || 'Đã hoàn tất phân loại tư liệu vào Eagle!'));
-        await refresh();
-        await loadPhotos(true);
-      } catch (err) {
-        message('Lỗi phân loại: ' + err.message, true);
-      } finally {
-        setActionStatus(false);
-        btnSync.disabled = false;
-      }
-    };
-  }
-
-  const btnScan = $('btnScanPhotos');
-  if (btnScan) {
-    btnScan.onclick = async () => {
-      btnScan.disabled = true;
-      setActionStatus(true, '🔄 Đang kích hoạt quét thêm tư liệu từ Google Photos...');
-      try {
-        await api('photos-scan', { profile_id: currentProfile });
-        message('✅ Đang tiếp tục quét kho Google Photos ngầm...');
-        setTimeout(() => setActionStatus(false), 2000);
-      } catch (err) {
-        message('Lỗi quét: ' + err.message, true);
-        setActionStatus(false);
-      } finally {
-        btnScan.disabled = false;
-      }
-    };
-  }
-
-  const btnEagle = $('btnOpenEagle');
-  if (btnEagle) {
-    btnEagle.onclick = async () => {
-      try {
-        await api('open-eagle');
-        message('📂 Đã kích hoạt mở thư viện Eagle (D:\\test.library)');
-      } catch (err) {
-        message('Lỗi mở Eagle: ' + err.message, true);
-      }
-    };
-  }
-
-  const btnPhotos = $('btnOpenPhotos');
-  if (btnPhotos) {
-    btnPhotos.onclick = async () => {
-      try {
-        await api('open-chrome', { profile_id: currentProfile, url: 'https://photos.google.com' });
-        message('🌐 Đã mở Google Photos trong trình duyệt Chrome');
-      } catch (err) {
-        message('Lỗi mở Chrome: ' + err.message, true);
-      }
-    };
-  }
-
+  // 13. System Update Button (1-Click Git Update)
   const btnUpdate = $('btnSystemUpdate');
   if (btnUpdate) {
     btnUpdate.onclick = async () => {
@@ -908,37 +819,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         message('⚠️ Lỗi cập nhật: ' + err.message, true);
       } finally {
         btnUpdate.classList.remove('loading');
-      }
-    };
-  }
-
-  // 16. Profile & Library Switchers
-  const pSel = $('profileSelect');
-  if (pSel) {
-    pSel.onchange = async () => {
-      try {
-        currentProfile = pSel.value;
-        await api('profile-select', { profile_id: currentProfile });
-        message('✅ Đã chuyển sang hồ sơ Photos: ' + pSel.options[pSel.selectedIndex].text);
-        await refresh();
-        await loadPhotos(true);
-      } catch (err) {
-        message('Lỗi chuyển profile: ' + err.message, true);
-      }
-    };
-  }
-
-  const eagleSel = $('eagleLibrarySelect');
-  if (eagleSel) {
-    eagleSel.onchange = async () => {
-      const libPath = eagleSel.value;
-      try {
-        await api('eagle-select', { library_path: libPath });
-        message('✅ Đang chuyển sang thư viện Eagle: ' + libPath);
-        await refresh();
-        await loadPhotos(true);
-      } catch (err) {
-        message('Lỗi chuyển thư viện Eagle: ' + err.message, true);
       }
     };
   }

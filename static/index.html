@@ -98,124 +98,25 @@
       </div>
     </section>
 
-    <!-- 2. DUAL CONNECTION & PROFILE MANAGER (TRUNG TÂM QUẢN LÝ PROFILE) -->
-    <section class="connection-hub-grid">
-
-      <!-- LEFT HUB: GOOGLE PHOTOS PROFILE -->
-      <div class="hub-card">
-        <div class="hub-header">
-          <div class="hub-header-left">
-            <div class="hub-icon-badge hub-icon-photos">
-              <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-            </div>
-            <div>
-              <h3 class="hub-title">Kho Nguồn Google Photos</h3>
-            </div>
-          </div>
-          <span id="hubPhotosStatus" class="hub-status-badge hub-status-online">
-            <span class="status-dot-pulse"></span> Đã kết nối Chrome
-          </span>
-        </div>
-
-        <!-- Account Profile Details -->
-        <div class="hub-account-row">
-          <img id="hubPhotosAvatar" class="hub-avatar-img" src="https://lh3.googleusercontent.com/ogw/AF2bZyhRRqsk8BAv8ajvGLtEDSvumbassxSWmk-HOxEeP6CJmw=s32-c-mo" alt="Avatar" onerror="this.style.display='none';document.getElementById('hubPhotosFallback').style.display='flex';">
-          <div id="hubPhotosFallback" class="hub-avatar-fallback" style="display:none;">LK</div>
-          <div class="hub-account-info">
-            <strong id="hubPhotosAccountName" class="hub-account-name">Le Khanh</strong>
-            <span id="hubPhotosAccountEmail" class="hub-account-meta">khaihoansk86@gmail.com · Gói Google Photos</span>
-          </div>
-        </div>
-
-        <!-- Interactive Profile Selector -->
-        <div class="hub-select-group">
-          <label for="profileSelect" class="hub-select-label">HỒ SƠ PHOTOS ĐANG CHỌN</label>
-          <select id="profileSelect" class="hub-select">
-            <option value="2e3744dd5f5e4b9ea37a4e5b6f49b98c">khaihoanskincare (1.136 ảnh/video)</option>
-            <option value="default">Kho Photos hiện có</option>
-          </select>
-        </div>
-
-        <div class="hub-stat-line">
-          <svg class="svg-icon" style="width:14px;height:14px;color:var(--theme-accent);" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          <span id="hubPhotosScanStatus">Đã rà soát 98 Album khách hàng · Tỷ lệ video dọc 83.5%</span>
-        </div>
-
-        <!-- Action Buttons -->
-        <div class="hub-actions-bar">
-          <button id="btnScanPhotos" class="macos-btn macos-btn-secondary" style="flex:1;">
-            <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-            Quét Thêm Tư Liệu
-          </button>
-          <button id="btnOpenPhotos" class="macos-btn macos-btn-outline">
-            <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-            Mở Photos ↗
-          </button>
-        </div>
+    <!-- 2. EXECUTIVE STATUS STRIP (ĐỒNG BỘ THÔNG TIN TỰ ĐỘNG QUA ANTIGRAVITY AI) -->
+    <section class="executive-status-strip">
+      <div class="status-chip-group">
+        <span class="status-info-chip">
+          <span class="status-dot-pulse"></span>
+          <span class="chip-label">Google Photos:</span>
+          <strong id="hubAccountDisplay" class="chip-val">Le Khanh (khaihoansk86@gmail.com)</strong>
+        </span>
+        <span class="status-info-chip">
+          <span class="status-dot-pulse"></span>
+          <span class="chip-label">Eagle DAM:</span>
+          <strong id="hubEagleDisplay" class="chip-val">test.library (D:\test.library)</strong>
+        </span>
       </div>
-
-      <!-- RIGHT HUB: EAGLE DAM LIBRARY -->
-      <div class="hub-card">
-        <div class="hub-header">
-          <div class="hub-header-left">
-            <div class="hub-icon-badge hub-icon-eagle">
-              <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><polygon points="12 11 12 17 17 14"/></svg>
-            </div>
-            <div>
-              <h3 class="hub-title">Thư Viện Đích Eagle DAM</h3>
-            </div>
-          </div>
-          <span id="hubEagleStatus" class="hub-status-badge hub-status-online">
-            <span class="status-dot-pulse"></span> Port 41595 Online
-          </span>
-        </div>
-
-        <!-- Library Details Row -->
-        <div class="hub-account-row">
-          <div class="hub-icon-badge" style="background:rgba(255,255,255,0.08);color:#ffffff;">
-            <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-          </div>
-          <div class="hub-account-info">
-            <strong id="hubEagleActiveName" class="hub-account-name">test.library</strong>
-            <span id="hubEagleActivePath" class="hub-account-meta" title="D:\test.library">Đường dẫn: D:\test.library</span>
-          </div>
-        </div>
-
-        <!-- Interactive Library Switcher -->
-        <div class="hub-select-group">
-          <label for="eagleLibrarySelect" class="hub-select-label">CHUYỂN ĐỔI THƯ VIỆN EAGLE</label>
-          <select id="eagleLibrarySelect" class="hub-select">
-            <option value="D:\test.library">test (D:\test.library) [Đang Mở]</option>
-          </select>
-        </div>
-
-        <div class="hub-stat-line">
-          <svg class="svg-icon" style="width:14px;height:14px;color:#fde047;" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-          <span id="hubEagleFoldersStat">Phân loại 631 tư liệu · 5 Trụ cột Content · 20 Thư mục VIP</span>
-        </div>
-
-        <!-- Action Buttons -->
-        <div class="hub-actions-bar">
-          <button id="btnSyncEagle" class="macos-btn macos-btn-primary" style="flex:1;">
-            <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-            Phân Loại & Đồng Bộ Eagle
-          </button>
-          <button id="btnOpenEagle" class="macos-btn macos-btn-secondary">
-            <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-            Mở Thư Viện ↗
-          </button>
-        </div>
+      <div class="status-info-chip chip-ai">
+        <span class="chip-label">Điều phối:</span>
+        <strong class="chip-val">🤖 Antigravity AI Direct</strong>
       </div>
-
     </section>
-
-    <!-- Animated Loading Indicator -->
-    <div id="actionStatusBox" class="action-status-box" style="display:none;">
-      <div class="status-loading-row">
-        <div class="loading-spinner"></div>
-        <span id="actionStatusText">Đang phân loại và đồng bộ vào Eagle DAM...</span>
-      </div>
-    </div>
 
     <!-- 3. DUAL WORKFLOW MANAGEMENT: PHOTO STUDIO & VIDEO REELS -->
     <section class="workflow-section">
@@ -258,9 +159,6 @@
               <option value="">👤 Tất cả khách hàng (107 hồ sơ)</option>
             </select>
             <input type="text" id="photoSearchInput" class="toolbar-search" placeholder="🔍 Tìm kiếm ảnh, tag, KH...">
-            <button id="btnQuickHero" class="macos-btn-accent-sm" title="Lọc nhanh 20 ảnh Hero đẹp nhất để làm truyền thông">
-              ⚡ Lọc 20 Hero
-            </button>
           </div>
         </div>
 
@@ -298,9 +196,6 @@
           </div>
           <div class="sub-toolbar-controls">
             <input type="text" id="videoSearchInput" class="toolbar-search" placeholder="🔍 Tìm clip, kịch bản, âm thanh...">
-            <button id="btnAnalyzeAllVideos" class="macos-btn-accent-sm" title="Bóc phụ đề Whisper và lập bản đồ 5s keyframe">
-              ✨ Bóc Phụ Đề AI
-            </button>
           </div>
         </div>
 
