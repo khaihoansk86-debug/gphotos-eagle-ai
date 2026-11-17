@@ -560,3 +560,21 @@ class Catalog:
         result = DuplicateFilter.cluster_burst_shots(eval_items, hash_threshold=threshold)
         result["total_in_library"] = len(items)
         return result
+
+    def analyze_video_asset(self, video_path: str) -> dict:
+        from video_analyzer import VideoAnalyzer
+        from taxonomy_manager import TaxonomyManager
+        tax = TaxonomyManager()
+        domain = tax.get_active_project().get("domain", "dermatology_spa")
+        p = Path(video_path)
+        if not p.exists():
+            client = EagleClient()
+            info = client.get_library_info() if client.is_connected() else {}
+            lib_path = info.get('library', {}).get('path', info.get('path', r"D:\test.library"))
+            candidate = Path(lib_path) / "images" / f"{video_path}.info"
+            if candidate.exists():
+                for f in candidate.iterdir():
+                    if f.suffix.lower() in ('.mp4', '.mov', '.webm', '.avi'):
+                        p = f
+                        break
+        return VideoAnalyzer.compile_video_intelligence(str(p), domain=domain)

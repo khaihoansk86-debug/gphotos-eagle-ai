@@ -55,6 +55,7 @@ DESCRIPTIONS = {
     'switch_taxonomy_project': 'Switch the active marketing project taxonomy (e.g. khaihoan_skincare, nha_khoa_clinic, fb_culinary) and automatically synchronize folder structures and tag groups to Eagle DAM.',
     'enrich_and_sync_eagle': 'Enrich all assets in Eagle library with structured marketing intelligence: 3s TikTok Hook, CapCut editing pacing & audio vibes, customer case study tagging, and functional content pillar folders.',
     'filter_burst_duplicates': 'Analyze visual similarity and Laplacian sharpness to group rapid burst shots and identify the sharpest Hero asset without consuming AI tokens.',
+    'analyze_video_asset': 'Simulate human 5s/10s video scrubbing: inspect keyframes, extract and classify audio track (dialogue/voice vs ASMR tool sounds vs ambient music), identify CapCut 3s hook highlights, and compile Eagle annotation.',
 }
 
 

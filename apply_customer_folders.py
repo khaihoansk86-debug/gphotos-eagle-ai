@@ -10,6 +10,7 @@ from vision_enricher import VisionEnricher
 from quality_scorer import QualityScorer
 from journey_classifier import JourneyClassifier
 from tool_detector import ToolDetector
+from video_analyzer import VideoAnalyzer
 
 LIBRARY_PATH = r"D:\test.library"
 IMAGES_DIR = os.path.join(LIBRARY_PATH, "images")
@@ -138,6 +139,10 @@ def run(library_path: str = None):
     domain = active_proj.get("domain", "dermatology_spa")
     enricher = VisionEnricher(tax_mgr)
 
+    from eagle_client import EagleClient
+    eagle_online = EagleClient().is_connected()
+    print(f"Trạng thái Eagle DAM: {'Đang chạy' if eagle_online else 'Chưa bật (Sẽ cập nhật trực tiếp vào file cache)'}")
+
     info_dirs = glob.glob(os.path.join(images_dir, "*.info"))
     print(f"Tổng số tư liệu cần xử lý: {len(info_dirs)}")
 
@@ -209,17 +214,47 @@ def run(library_path: str = None):
             # 2b. Domain Technique & Tool Detection
             tool_tags = ToolDetector.detect_techniques(img_path, domain=domain)
 
-            # 2c. Generate comprehensive Marketing & Video Brief
-            brief = enricher.generate_brief(
-                asset_label=name,
-                kind="video" if "video" in name.lower() or meta.get("ext") == "mp4" else "photo",
-                customer_name=matched_cust["name"] if matched_cust else None,
-                photo_url=meta.get("url"),
-                date_str=item.get("date_str"),
-                journey_phase=phase,
-                quality_info=q_res,
-                tool_tags=tool_tags
-            )
+            # 2c. Generate comprehensive Marketing & Video Brief (with Video Intelligence if video file)
+            is_video = "video" in name.lower() or meta.get("ext") in ["mp4", "mov", "webm"]
+            if is_video and img_path and img_path.lower().endswith((".mp4", ".mov", ".webm", ".avi")):
+                v_res = VideoAnalyzer.compile_video_intelligence(
+                    img_path,
+                    customer_name=matched_cust["name"] if matched_cust else None,
+                    photo_url=meta.get("url"),
+                    date_str=item.get("date_str"),
+                    domain=domain
+                )
+                if v_res.get("status") == "success":
+                    brief = {
+                        "pillar_id": "video",
+                        "tags": v_res["tags"],
+                        "annotation": v_res["annotation"],
+                        "title": name,
+                        "rating": v_res["rating"]
+                    }
+                    rating = v_res["rating"]
+                else:
+                    brief = enricher.generate_brief(
+                        asset_label=name,
+                        kind="video",
+                        customer_name=matched_cust["name"] if matched_cust else None,
+                        photo_url=meta.get("url"),
+                        date_str=item.get("date_str"),
+                        journey_phase=phase,
+                        quality_info=q_res,
+                        tool_tags=tool_tags
+                    )
+            else:
+                brief = enricher.generate_brief(
+                    asset_label=name,
+                    kind="video" if is_video else "photo",
+                    customer_name=matched_cust["name"] if matched_cust else None,
+                    photo_url=meta.get("url"),
+                    date_str=item.get("date_str"),
+                    journey_phase=phase,
+                    quality_info=q_res,
+                    tool_tags=tool_tags
+                )
 
             # Preserve existing functional folder or determine from brief
             existing_functional_fid = next((fid for fid in meta.get("folders", []) if fid in FOLDERS.values()), None)
@@ -254,18 +289,19 @@ def run(library_path: str = None):
 
             updated_items[item_id] = meta
 
-            # Update Eagle memory via API
-            try:
-                payload = json.dumps({
-                    "id": item_id,
-                    "tags": tags,
-                    "annotation": anno,
-                    "star": rating
-                }).encode("utf-8")
-                req = urllib.request.Request("http://localhost:41595/api/item/update", data=payload, headers={"Content-Type": "application/json"}, method="POST")
-                urllib.request.urlopen(req, timeout=3)
-            except Exception:
-                pass
+            # Update Eagle memory via API if running
+            if eagle_online:
+                try:
+                    payload = json.dumps({
+                        "id": item_id,
+                        "tags": tags,
+                        "annotation": anno,
+                        "star": rating
+                    }).encode("utf-8")
+                    req = urllib.request.Request("http://localhost:41595/api/item/update", data=payload, headers={"Content-Type": "application/json"}, method="POST")
+                    urllib.request.urlopen(req, timeout=1.0)
+                except Exception:
+                    pass
 
     print(f"\n✅ Đã phân loại chuyên sâu thành công {len(updated_items)} tư liệu!")
     print("\n⭐ Phân bổ Đánh giá Chất lượng (Star Rating):")
@@ -304,18 +340,19 @@ def run(library_path: str = None):
         except Exception as e:
             print("⚠️ Lỗi ghi cache:", e)
 
-    # 4. Trigger Eagle reload
-    print("\nĐang gửi lệnh yêu cầu Eagle làm mới lại thư viện...")
+    # 4. Trigger Eagle reload if running
     reload_status = "skipped"
-    try:
-        payload = json.dumps({"libraryPath": lib_path}).encode("utf-8")
-        req = urllib.request.Request("http://localhost:41595/api/library/switch", data=payload, headers={"Content-Type": "application/json"}, method="POST")
-        res = urllib.request.urlopen(req, timeout=5)
-        reload_status = "success"
-        print("✅ Eagle reload thành công:", res.read().decode())
-    except Exception as e:
-        reload_status = f"error: {e}"
-        print("⚠️ Lỗi reload Eagle:", e)
+    if eagle_online:
+        print("\nĐang gửi lệnh yêu cầu Eagle làm mới lại thư viện...")
+        try:
+            payload = json.dumps({"libraryPath": lib_path}).encode("utf-8")
+            req = urllib.request.Request("http://localhost:41595/api/library/switch", data=payload, headers={"Content-Type": "application/json"}, method="POST")
+            res = urllib.request.urlopen(req, timeout=3)
+            reload_status = "success"
+            print("✅ Eagle reload thành công:", res.read().decode())
+        except Exception as e:
+            reload_status = f"error: {e}"
+            print("⚠️ Lỗi reload Eagle:", e)
 
     return {
         "status": "completed",
