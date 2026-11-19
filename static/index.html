@@ -111,11 +111,45 @@
           <span class="chip-label">Eagle DAM:</span>
           <strong id="hubEagleDisplay" class="chip-val">test.library (D:\test.library)</strong>
         </span>
+        <div class="domain-selector-chip" title="Chuyển đổi ngữ cảnh marketing & sơ đồ cây ngành">
+          <span class="chip-label">🏷️ Ngành:</span>
+          <select id="domainProjectSelect" class="domain-dropdown">
+            <option value="khaihoan_skincare">🌿 Spa & Chăm Sóc Da</option>
+            <option value="fb_culinary">🥩 Ẩm Thực & Nhà Hàng</option>
+            <option value="fitness_gym">🏋️ Thể Hình & Gym Pro</option>
+            <option value="nha_khoa_clinic">🦷 Nha Khoa Thẩm Mỹ</option>
+          </select>
+        </div>
       </div>
-      <div class="status-info-chip chip-ai">
-        <span class="chip-label">Điều phối:</span>
-        <strong class="chip-val">🤖 Antigravity AI Direct</strong>
+      <div style="display:flex;align-items:center;gap:10px;margin-left:auto;">
+        <button id="btnOpenMcpHub" class="mcp-hub-pill-btn" title="Xem liên thông MCP Bridge với Antigravity AI">
+          <span class="status-dot-pulse" style="background:#22c55e;"></span>
+          <span class="mcp-hub-label">MCP: 8898 (39 Tools)</span>
+        </button>
+        <div class="status-info-chip chip-ai">
+          <span class="chip-label">Điều phối:</span>
+          <strong class="chip-val">🤖 Antigravity AI</strong>
+        </div>
       </div>
+    </section>
+
+    <!-- 2.5 QUICK ACTION STRIP (LIÊN THÔNG MCP, EAGLE DAM VÀ CONTENT) -->
+    <section class="quick-action-strip">
+      <button id="btnReorganizeEagle" class="qa-btn qa-primary" title="Tái cấu trúc Eagle thành đúng 2 nhánh: Kho Hình Ảnh vs Kho Video Clips">
+        <span>⚡</span> Tái Cấu Trúc Eagle 2 Nhánh
+      </button>
+      <button id="btnEnrichEagle" class="qa-btn" title="Phân tích và bổ sung Hook 3s Viral, ASMR, tag chuyên môn vào Eagle">
+        <span>🌿</span> Rót Trí Tuệ Marketing
+      </button>
+      <button id="btnFilterBurst" class="qa-btn" title="Chấm điểm độ nét Laplacian lọc ảnh Hero 5 sao">
+        <span>📸</span> Lọc Ảnh 5⭐ Hero
+      </button>
+      <button id="btnOpenEagleDirect" class="qa-btn qa-accent" title="Mở thư mục Eagle test.library">
+        <span>📂</span> Mở Eagle DAM
+      </button>
+      <button id="btnMcpDetails" class="qa-btn qa-outline" title="Chi tiết 39 MCP Tools và hướng dẫn kết nối">
+        <span>🔌</span> MCP Hub (39 Tools)
+      </button>
     </section>
 
     <!-- 3. DUAL WORKFLOW MANAGEMENT: PHOTO STUDIO & VIDEO REELS -->
@@ -294,6 +328,50 @@
       </div>
       <div class="comparison-body" id="baComparisonBody">
         <!-- Side by side comparison cards loaded dynamically -->
+      </div>
+    </div>
+
+    <!-- 6. MCP HUB MODAL (LIÊN THÔNG MCP BRIDGE & ANTIGRAVITY AI) -->
+    <div id="mcpModalBackdrop" class="drawer-backdrop" style="display:none;"></div>
+    <div id="mcpHubModal" class="comparison-modal" style="display:none; max-width:880px;">
+      <div class="comparison-header">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span style="font-size:24px;">🔌</span>
+          <div>
+            <h3 class="drawer-title">MCP Bridge Gateway · Streamable HTTP & stdio</h3>
+            <span class="drawer-subtext" style="font-size:12px;color:var(--text-muted);">Liên thông 2 chiều giữa Antigravity AI, Eagle DAM và Web Dashboard</span>
+          </div>
+        </div>
+        <button id="btnCloseMcpModal" class="drawer-close-pill">✕ Đóng</button>
+      </div>
+      <div class="comparison-body" style="padding:20px; display:flex; flex-direction:column; gap:18px;">
+        <!-- Connection Info Banner -->
+        <div class="mcp-info-banner">
+          <div class="mcp-banner-item">
+            <span class="mcp-b-label">HTTP MCP Endpoint:</span>
+            <code class="mcp-code">http://127.0.0.1:8898/mcp</code>
+          </div>
+          <div class="mcp-banner-item">
+            <span class="mcp-b-label">Trạng thái kết nối:</span>
+            <span class="badge-pill-inline badge-speech" style="background:rgba(34,197,94,0.15);color:#22c55e;">🟢 Sẵn Sàng (39 Tools)</span>
+          </div>
+          <div class="mcp-banner-item">
+            <span class="mcp-b-label">Ngành nghề đang kích hoạt:</span>
+            <strong id="mcpActiveDomainName" style="color:var(--theme-accent, #38bdf8);">🌿 Spa & Chăm Sóc Da</strong>
+          </div>
+          <button id="btnCopyMcpConfig" class="macos-btn-outline-sm" style="align-self:flex-start; margin-top:4px;">📋 Sao Chép JSON Cấu Hình MCP</button>
+        </div>
+
+        <!-- Search Tools -->
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+          <h4 style="margin:0; font-size:14px; font-weight:700; color:#ffffff;">Danh mục 39 Công Cụ MCP (Tools) AI Agent sử dụng:</h4>
+          <input type="text" id="mcpToolSearchInput" class="toolbar-search" placeholder="🔍 Lọc tool theo tên hoặc chức năng..." style="max-width:280px;">
+        </div>
+
+        <!-- Tools Grid -->
+        <div id="mcpToolsGrid" class="mcp-tools-grid" style="max-height:360px; overflow-y:auto;">
+          <!-- Loaded dynamically by app.js -->
+        </div>
       </div>
     </div>
 

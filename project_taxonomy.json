@@ -358,6 +358,102 @@
         "3s đầu đẫm sốt: 'Rót sốt phô mai ngập tràn đĩa mỳ Ý béo ngậy khiến ai xem cũng phải thèm!'",
         "3s đầu bí ẩn: 'Quán cafe núp hẻm nhưng cứ mở cửa là kín bàn vì lý do này.'"
       ]
+    },
+    "fitness_gym": {
+      "id": "fitness_gym",
+      "name": "Phòng Gym & Trung Tâm Thể Hình Pro",
+      "domain": "fitness_sports",
+      "description": "Kho tư liệu bài tập, biến đổi thể hình Before-After, hướng dẫn kỹ thuật của HLV và video Workout Reels.",
+      "pillars": [
+        {
+          "id": "facility",
+          "folder_name": "01_Không gian phòng Gym & Dàn máy tập",
+          "tag": "Gym_Cơ_Sở_Vật_Chất",
+          "color": "#10b981",
+          "description": "Dàn tạ khối, máy kéo cáp, khu vực tạ tự do, sàn cao su giảm chấn, ánh sáng thể thao mạnh mẽ.",
+          "visual_keywords": [
+            "phòng gym",
+            "giàn tạ",
+            "máy chạy bộ",
+            "tạ đơn",
+            "tạ đòn",
+            "khung gánh",
+            "khu cardio"
+          ],
+          "content_angle": "Không gian tập luyện chuyên nghiệp, máy móc nhập khẩu tạo động lực bùng nổ năng lượng."
+        },
+        {
+          "id": "feedback",
+          "folder_name": "02_Chuyển đổi hình thể (Before & After Body Transformation)",
+          "tag": "Biến_Đổi_Body",
+          "color": "#06b6d4",
+          "description": "Hình ảnh siết cơ, giảm mỡ, tăng cơ nạc rõ rệt sau lộ trình tập luyện 3-6 tháng.",
+          "visual_keywords": [
+            "before after",
+            "cơ bụng 6 múi",
+            "giảm mỡ",
+            "tăng cơ",
+            "siết cơ",
+            "kết quả tập"
+          ],
+          "content_angle": "Bằng chứng chuyển hóa hình thể ngoạn mục, tạo niềm tin mạnh mẽ cho học viên mới."
+        },
+        {
+          "id": "hook",
+          "folder_name": "03_Hook 3s Viral (Nâng tạ nặng, Mồ hôi, Gân tay nổi)",
+          "tag": "Hook_3s_Gym_Viral",
+          "color": "#ef4444",
+          "description": "3 giây đầu cận cảnh gồng cơ, nâng mức tạ kỷ lục PR, giọt mồ hôi rơi kích hoạt sự hưng phấn thị giác.",
+          "visual_keywords": [
+            "nâng tạ",
+            "gồng cơ",
+            "mồ hôi",
+            "tiếng thét",
+            "deadlift",
+            "squat nặng",
+            "gân tay"
+          ],
+          "content_angle": "Visual Shock kích hoạt hormone hưng phấn (dopamine/adrenaline), giữ chân người xem ngay lập tức."
+        },
+        {
+          "id": "treatment",
+          "folder_name": "04_B-Roll HLV PT chỉnh form chuẩn y khoa",
+          "tag": "BRoll_HLV_Chỉnh_Form",
+          "color": "#8b5cf6",
+          "description": "Huấn luyện viên cá nhân (PT) đứng kèm 1-1, chỉnh góc khớp gối, lưng thẳng chống chấn thương.",
+          "visual_keywords": [
+            "pt",
+            "hlv",
+            "chỉnh form",
+            "kèm 1-1",
+            "khớp gối",
+            "lưng thẳng",
+            "hướng dẫn"
+          ],
+          "content_angle": "Tôn vinh chuyên môn an toàn chuẩn y khoa của đội ngũ PT, xóa bỏ nỗi sợ chấn thương."
+        },
+        {
+          "id": "video",
+          "folder_name": "05_Raw Video Footage (CapCut Workout Reels & TikTok)",
+          "tag": "Video_Workout_Reels",
+          "color": "#f59e0b",
+          "description": "Video dọc 9:16 lia nhanh từng hiệp tập, chuyển động chậm (Slow-Mo) cơ bắp cuồn cuộn.",
+          "visual_keywords": [
+            "workout",
+            "reels gym",
+            "slow-mo",
+            "dọc 9:16",
+            "nhịp nhạc sung",
+            "tập gym"
+          ],
+          "content_angle": "Footage bắt trend TikTok, chèn nhạc hiphop/phonk cực kỳ dễ viral."
+        }
+      ],
+      "hook_script_templates": [
+        "3s đầu bùng nổ: [Tiếng tạ rơi sàn ầm vang] + '3 sai lầm chết người khi Squat khiến bạn đau lưng mà không to mông!'",
+        "3s đầu biến đổi: 'Hành trình giảm 15kg mỡ thừa trong 90 ngày của chàng trai văn phòng: Thay đổi hoàn toàn số phận!'",
+        "3s đầu bí quyết: 'Chỉ cần sửa góc cổ tay này, ngực bạn sẽ căng tròn gấp đôi sau mỗi buổi tập!'"
+      ]
     }
   }
 }

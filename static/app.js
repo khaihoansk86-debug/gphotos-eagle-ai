@@ -682,11 +682,70 @@ async function refresh() {
     if ($('kpiPhotos')) $('kpiPhotos').textContent = pCount.toLocaleString('vi-VN');
     if ($('kpiVideos')) $('kpiVideos').textContent = vCount.toLocaleString('vi-VN');
     if ($('kpiAlbums')) $('kpiAlbums').textContent = (state.albums_count || 98).toLocaleString('vi-VN');
-    if ($('kpiClassified')) $('kpiClassified').textContent = '631';
+    if ($('kpiClassified')) $('kpiClassified').textContent = (pCount + vCount).toLocaleString('vi-VN');
+
+    // 5. Taxonomy Domain Sync
+    if (state.taxonomy && state.taxonomy.active_project) {
+      const dSel = $('domainProjectSelect');
+      if (dSel && document.activeElement !== dSel) {
+        dSel.value = state.taxonomy.active_project.id || 'khaihoan_skincare';
+      }
+      if ($('mcpActiveDomainName')) {
+        $('mcpActiveDomainName').textContent = state.taxonomy.active_project.name || 'Spa & Chăm Sóc Da';
+      }
+    }
+
+    // 6. MCP Gateway Status Sync
+    if (state.mcp) {
+      const mcpBtn = $('btnOpenMcpHub');
+      if (mcpBtn) {
+        mcpBtn.innerHTML = `<span class="status-dot-pulse" style="background:#22c55e;"></span><span class="mcp-hub-label">MCP: 8898 (${state.mcp.tools_count || 39} Tools)</span>`;
+      }
+      window._mcpToolsCache = state.mcp.tools || [];
+    }
 
   } catch (err) {
     console.warn('Refresh state error:', err);
   }
+}
+
+// -------------------------------------------------------------
+// MCP HUB MODAL CONTROLS
+// -------------------------------------------------------------
+function openMcpHubModal() {
+  const modal = $('mcpHubModal');
+  const backdrop = $('mcpModalBackdrop');
+  if (!modal || !backdrop) return;
+  modal.style.display = 'flex';
+  backdrop.style.display = 'block';
+  renderMcpTools(window._mcpToolsCache || []);
+}
+
+function closeMcpHubModal() {
+  const modal = $('mcpHubModal');
+  const backdrop = $('mcpModalBackdrop');
+  if (modal) modal.style.display = 'none';
+  if (backdrop) backdrop.style.display = 'none';
+}
+
+function renderMcpTools(tools, filterQuery = '') {
+  const grid = $('mcpToolsGrid');
+  if (!grid) return;
+  const q = filterQuery.toLowerCase().trim();
+  const filtered = q ? tools.filter(t => t.name.toLowerCase().includes(q) || t.description.toLowerCase().includes(q)) : tools;
+  if (!filtered || filtered.length === 0) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:24px;color:var(--text-muted);">Không tìm thấy công cụ MCP phù hợp</div>';
+    return;
+  }
+  grid.innerHTML = filtered.map(t => `
+    <div class="mcp-tool-card">
+      <div class="mcp-tool-header">
+        <span class="mcp-tool-name">${t.name}</span>
+        <span class="badge-pill-inline badge-speech" style="font-size:10px;">MCP Tool</span>
+      </div>
+      <div class="mcp-tool-desc">${t.description}</div>
+    </div>
+  `).join('');
 }
 
 // -------------------------------------------------------------
@@ -820,6 +879,119 @@ document.addEventListener('DOMContentLoaded', async () => {
       } finally {
         btnUpdate.classList.remove('loading');
       }
+    };
+  }
+
+  // 14. Domain / Ngành Nghề Project Switcher
+  const dSel = $('domainProjectSelect');
+  if (dSel) {
+    dSel.onchange = async () => {
+      const selectedText = dSel.options[dSel.selectedIndex].text;
+      message(`🔄 Đang chuyển đổi ngành sang: ${selectedText}...`);
+      try {
+        const res = await api('switch-taxonomy-project', { project_id: dSel.value });
+        message(`✅ ${res.message || 'Đã chuyển đổi ngành thành công!'}`);
+        await refresh();
+        await loadPhotos(true);
+        if (activeWorkflow === 'video') await loadVideos(true);
+      } catch (err) {
+        message(`⚠️ Lỗi chuyển đổi ngành: ${err.message}`, true);
+      }
+    };
+  }
+
+  // 15. Quick Action Strip Handlers (Liên thông MCP & Eagle DAM)
+  const btnReorg = $('btnReorganizeEagle');
+  if (btnReorg) {
+    btnReorg.onclick = async () => {
+      btnReorg.classList.add('loading');
+      message('⚡ Đang tái cấu trúc thư viện Eagle thành 2 nhánh chuẩn (Kho Ảnh & Kho Video)...');
+      try {
+        const res = await api('reorganize-eagle');
+        message(`✅ ${res.message || 'Đã tái cấu trúc Eagle thành công!'}`);
+        await refresh();
+        await loadPhotos(true);
+        if (activeWorkflow === 'video') await loadVideos(true);
+      } catch (err) {
+        message(`⚠️ Lỗi tái cấu trúc: ${err.message}`, true);
+      } finally {
+        btnReorg.classList.remove('loading');
+      }
+    };
+  }
+
+  const btnEnrich = $('btnEnrichEagle');
+  if (btnEnrich) {
+    btnEnrich.onclick = async () => {
+      message('🌿 Đang rót trí tuệ marketing, Hook 3s Viral và ASMR vào Eagle...');
+      try {
+        const res = await api('enrich-and-sync-eagle');
+        message(`✅ ${res.message || 'Đã đồng bộ trí tuệ marketing thành công!'}`);
+        await refresh();
+      } catch (err) {
+        message(`⚠️ Lỗi: ${err.message}`, true);
+      }
+    };
+  }
+
+  const btnBurst = $('btnFilterBurst');
+  if (btnBurst) {
+    btnBurst.onclick = async () => {
+      message('📸 Đang chấm điểm độ nét Laplacian lọc ảnh Hero 5 sao trong các chuỗi burst...');
+      try {
+        const res = await api('filter-burst-duplicates');
+        message(`✅ ${res.message || 'Đã lọc ảnh Hero thành công!'}`);
+        await refresh();
+        await loadPhotos(true);
+      } catch (err) {
+        message(`⚠️ Lỗi: ${err.message}`, true);
+      }
+    };
+  }
+
+  const btnOpenE = $('btnOpenEagleDirect');
+  if (btnOpenE) {
+    btnOpenE.onclick = async () => {
+      message('📂 Đang mở thư viện Eagle DAM trên máy...');
+      try {
+        await api('open-eagle');
+        message('✅ Đã mở thư mục Eagle test.library!');
+      } catch (err) {
+        message(`⚠️ Lỗi mở Eagle: ${err.message}`, true);
+      }
+    };
+  }
+
+  // 16. MCP Hub Gateway Modal Triggers & Search
+  const btnMcpHub = $('btnOpenMcpHub');
+  const btnMcpDet = $('btnMcpDetails');
+  const btnCloseMcp = $('btnCloseMcpModal');
+  const backdropMcp = $('mcpModalBackdrop');
+  if (btnMcpHub) btnMcpHub.onclick = openMcpHubModal;
+  if (btnMcpDet) btnMcpDet.onclick = openMcpHubModal;
+  if (btnCloseMcp) btnCloseMcp.onclick = closeMcpHubModal;
+  if (backdropMcp) backdropMcp.onclick = closeMcpHubModal;
+
+  const mcpSearch = $('mcpToolSearchInput');
+  if (mcpSearch) {
+    mcpSearch.oninput = () => {
+      renderMcpTools(window._mcpToolsCache || [], mcpSearch.value);
+    };
+  }
+
+  const btnCopyMcp = $('btnCopyMcpConfig');
+  if (btnCopyMcp) {
+    btnCopyMcp.onclick = () => {
+      const configJson = JSON.stringify({
+        "mcpServers": {
+          "gphotos-content-vision": {
+            "serverUrl": "http://127.0.0.1:8898/mcp"
+          }
+        }
+      }, null, 2);
+      navigator.clipboard.writeText(configJson).then(() => {
+        message('📋 Đã sao chép cấu hình JSON của MCP Endpoint vào clipboard!');
+      });
     };
   }
 

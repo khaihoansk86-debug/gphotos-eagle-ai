@@ -13,6 +13,7 @@ from starlette.responses import FileResponse, JSONResponse, Response
 from starlette.routing import Route
 from gphotos_extractor import GPhotosExtractor
 from eagle_client import EagleClient
+from taxonomy_manager import TaxonomyManager
 import media
 
 ROOT=Path(__file__).parent
@@ -253,6 +254,18 @@ def routes(catalog):
         
         eagle_ok,eagle_folders,eagle_info,eagle_libs=get_eagle_snapshot()
 
+        # Taxonomy and MCP State
+        taxonomy_mgr = TaxonomyManager()
+        active_proj = taxonomy_mgr.get_active_project()
+        proj_list = taxonomy_mgr.list_projects()
+        from mcp_bridge import DESCRIPTIONS
+        mcp_payload = {
+            'endpoint': 'http://127.0.0.1:8898/mcp',
+            'status': 'online',
+            'tools_count': len(DESCRIPTIONS),
+            'tools': [{'name': n, 'description': d} for n, d in DESCRIPTIONS.items()]
+        }
+
         return {'token':TOKEN,'profiles':profiles,'selected_profile':selected_profile,
                 'preview':catalog.get_source_preview(),'monitor':catalog.get_monitor(),
                 'albums_count':albums_count,'eagle_folders':eagle_folders,
@@ -260,7 +273,12 @@ def routes(catalog):
                 'photo_status':{p['id']:catalog.get_photo_profile_status(p['id']) for p in profiles},
                 'photo_inventory':{p['id']:catalog.list_photo_items(p['id'],limit=5) for p in profiles},
                 'chat_messages':catalog.list_chat_messages(limit=50),'sources':catalog.list_sources(),'jobs':catalog.list_jobs(),
-                'operations':tasks,'eagle_connected':eagle_ok}
+                'operations':tasks,'eagle_connected':eagle_ok,
+                'mcp': mcp_payload,
+                'taxonomy': {
+                    'active_project': active_proj,
+                    'projects': proj_list
+                }}
 
     async def state(request):
         return JSONResponse(await asyncio.to_thread(snapshot),headers={'Cache-Control':'no-store'})
@@ -542,6 +560,44 @@ def routes(catalog):
             elif command=='customer-journeys':
                 cust=data.get('customer','').strip()
                 result=await asyncio.to_thread(get_customer_journey_pairs,cust)
+            elif command=='switch-taxonomy-project':
+                pid=data.get('project_id','khaihoan_skincare')
+                res=await asyncio.to_thread(catalog.switch_taxonomy_project,pid)
+                active=res.get('active_project',{})
+                _eagle_cache['time']=0
+                _asset_cache['time']=0
+                result={'status':'success','active_project':active,'message':f"Đã chuyển sang ngành: {active.get('name', pid)}"}
+            elif command=='list-taxonomy-projects':
+                projects=await asyncio.to_thread(catalog.list_taxonomy_projects)
+                result={'status':'success','projects':projects}
+            elif command=='reorganize-eagle':
+                def run_reorg():
+                    import subprocess, sys
+                    script_path = str(ROOT / 'reorganize_eagle_tree.py')
+                    res = subprocess.run([sys.executable, script_path], capture_output=True, text=True, encoding='utf-8', timeout=180)
+                    return res.stdout
+                out = await asyncio.to_thread(run_reorg)
+                _eagle_cache['time']=0
+                _asset_cache['time']=0
+                result={'status':'success','message':'Đã hoàn tất tái cấu trúc Eagle thành 2 nhánh chuẩn!','output':out[:600]}
+            elif command=='filter-burst-duplicates':
+                res=await asyncio.to_thread(catalog.filter_burst_duplicates)
+                _asset_cache['time']=0
+                result={'status':'success','data':res,'message':'Đã lọc trùng lặp chuỗi ảnh burst và tìm ảnh Hero!'}
+            elif command=='enrich-and-sync-eagle':
+                res=await asyncio.to_thread(catalog.enrich_and_sync_eagle)
+                _eagle_cache['time']=0
+                _asset_cache['time']=0
+                result={'status':'success','data':res,'message':'Đã đồng bộ trí tuệ marketing và sơ đồ cây vào Eagle DAM!'}
+            elif command=='mcp-info':
+                from mcp_bridge import DESCRIPTIONS
+                result={
+                    'status':'success',
+                    'endpoint':'http://127.0.0.1:8898/mcp',
+                    'version':'2.1',
+                    'tools_count':len(DESCRIPTIONS),
+                    'tools':[{'name':n,'description':d} for n,d in DESCRIPTIONS.items()]
+                }
             else:
                 raise ValueError('Unknown operation')
             return JSONResponse(result)
