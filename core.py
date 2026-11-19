@@ -607,3 +607,40 @@ class Catalog:
             "matched_vip_sessions": len(matched),
             "sessions": enriched[:50]
         }
+
+    def resolve_user_intent(self, user_query: str) -> dict:
+        from intent_engine import IntentEngine
+        return IntentEngine.resolve_intent(user_query)
+
+    def get_skill_guide(self, skill_name: str = 'universal-media-classifier') -> dict:
+        from intent_engine import IntentEngine
+        content = IntentEngine.get_skill_content(skill_name)
+        if not content:
+            return {"status": "error", "message": f"Skill '{skill_name}' not found."}
+        return {
+            "status": "success",
+            "skill_name": skill_name,
+            "content": content
+        }
+
+    def list_available_skills(self) -> list:
+        from intent_engine import IntentEngine
+        return IntentEngine.list_skills()
+
+    def register_skill(self, skill_name: str, description: str, content: str) -> dict:
+        from intent_engine import IntentEngine
+        return IntentEngine.register_or_update_skill(skill_name, description, content)
+
+    def register_taxonomy_project(self, project_id: str, name: str, domain: str, pillars_json: str = "[]") -> dict:
+        from taxonomy_manager import TaxonomyManager
+        mgr = TaxonomyManager()
+        try:
+            pillars = json.loads(pillars_json) if isinstance(pillars_json, str) else pillars_json
+        except Exception:
+            pillars = []
+        proj = mgr.register_project(project_id, name, domain, pillars)
+        return {
+            "status": "success",
+            "registered_project_id": project_id,
+            "project": proj
+        }

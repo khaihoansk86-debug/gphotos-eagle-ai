@@ -592,14 +592,25 @@ def routes(catalog):
             elif command=='cluster-sessions':
                 res=await asyncio.to_thread(catalog.cluster_treatment_sessions)
                 result={'status':'success','data':res,'message':f"Đã gom cụm thành công {res.get('total_sessions')} ca liệu trình!"}
+            elif command=='resolve-intent':
+                user_q=body.get('query','')
+                res=await asyncio.to_thread(catalog.resolve_user_intent, user_q)
+                result={'status':'success','data':res}
+            elif command=='list-skills':
+                res=await asyncio.to_thread(catalog.list_available_skills)
+                result={'status':'success','data':res}
             elif command=='mcp-info':
-                from mcp_bridge import DESCRIPTIONS
+                from mcp_bridge import DESCRIPTIONS, RESOURCES, PROMPTS
                 result={
                     'status':'success',
                     'endpoint':'http://127.0.0.1:8898/mcp',
-                    'version':'2.1',
+                    'version':'2.2.0',
                     'tools_count':len(DESCRIPTIONS),
-                    'tools':[{'name':n,'description':d} for n,d in DESCRIPTIONS.items()]
+                    'resources_count':len(RESOURCES),
+                    'prompts_count':len(PROMPTS),
+                    'tools':[{'name':n,'description':d} for n,d in DESCRIPTIONS.items()],
+                    'resources':[{'uri':r.uri,'name':r.name,'title':r.title} for r in RESOURCES],
+                    'prompts':[{'name':p.name,'title':p.title,'description':p.description} for p in PROMPTS]
                 }
             else:
                 raise ValueError('Unknown operation')

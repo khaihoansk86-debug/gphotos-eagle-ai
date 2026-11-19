@@ -6,11 +6,11 @@ import asyncio
 import uvicorn
 from starlette.responses import JSONResponse, PlainTextResponse
 from starlette.routing import Route
-from mcp_bridge import server,catalog,DESCRIPTIONS
+from mcp_bridge import server,catalog,DESCRIPTIONS,RESOURCES,PROMPTS
 from dashboard import routes
 
 async def health(request):
-    return JSONResponse({'service':'gphotos-content-vision','version':'2.1','tools':len(DESCRIPTIONS),'pid':os.getpid()})
+    return JSONResponse({'service':'gphotos-content-vision','version':'2.2','tools':len(DESCRIPTIONS),'resources':len(RESOURCES),'prompts':len(PROMPTS),'pid':os.getpid()})
 
 inner_app=server.streamable_http_app(host='127.0.0.1',json_response=True,
     custom_starlette_routes=[Route('/health',health),*routes(catalog)])

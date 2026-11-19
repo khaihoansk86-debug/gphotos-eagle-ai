@@ -101,6 +101,24 @@ Agent giao tiếp trực tiếp qua MCP Server `gphotos-content-vision` tại `h
 | `analyze_video_asset` | Phân tích sâu video: tua nhanh 5s/10s, bóc phụ đề Faster-Whisper, đo tần số ASMR. |
 | `enrich_and_sync_eagle` | Rót toàn bộ thông tin trí tuệ marketing, Hook 3s và tag vào Eagle DAM. |
 | `commit_to_eagle` | Nhập các tư liệu đã duyệt vào thư viện Eagle chỉ định. |
+| `resolve_user_intent` | **Bộ định tuyến nhu cầu & đề xuất tool chuẩn:** Phân tích câu lệnh người dùng, tự động xác định ngành, chọn skill và sinh chuỗi công cụ thực thi tối ưu. |
+| `get_skill_guide` | **Đọc tài liệu kỹ năng:** Truy xuất toàn bộ hướng dẫn, quy tắc bất biến và mẫu CapCut của skill qua MCP. |
+| `list_available_skills` | Liệt kê danh mục toàn bộ các kỹ năng đã đăng ký trong hệ thống cùng mô tả và tham số. |
+| `register_skill` | **Ghi nhận kỹ năng mới:** Cho phép AI hoặc lập trình viên đăng ký động file `SKILL.md` mới vào hệ thống tức thì. |
+| `register_taxonomy_project` | **Mở rộng ngành nghề mới:** Đăng ký thêm ngành kinh doanh mới (Bất động sản, Auto Detailing...) với Content Pillars và từ khóa tùy biến. |
+
+### 3.1. Hệ Thống Tài Nguyên Động (MCP Resources) & Mẫu Chỉ Lệnh (MCP Prompts)
+
+Cổng MCP Gateway mở sẵn các kênh dữ liệu trực tiếp chuẩn giao thức MCP:
+* **MCP Resources (`resources/list` & `resources/read`):**
+  * `resource://skills/universal-media-classifier`: Toàn văn hướng dẫn kỹ năng (SKILL.md).
+  * `resource://taxonomy/active`: Cấu hình Content Pillars và từ khóa của ngành nghề đang kích hoạt.
+  * `resource://eagle/tree-structure`: Bản đặc tả cấu trúc 2 nhánh rạch ròi của Eagle DAM.
+  * `resource://skills/registry`: Danh mục tổng thể tất cả các skill có trong kho.
+* **MCP Prompts (`prompts/list` & `prompts/get`):**
+  * `media_classification_workflow`: Mẫu chỉ dẫn chuẩn 6 bước cho AI Agent phân loại ảnh/video.
+  * `treatment_session_clustering`: Mẫu chỉ dẫn gom cụm phiên thời gian 35 phút.
+  * `video_hook_asmr_scrubbing`: Mẫu chỉ dẫn tua nhanh 5s/10s bóc Hook 3s & ASMR >4.5kHz.
 
 ---
 
@@ -122,16 +140,17 @@ sequenceDiagram
     Agent-->>User: Báo cáo kết quả: Xếp vào nhánh Video Clip, phân tích Hook & ASMR
 ```
 
-### Bước 1: Khởi Tạo & Xác Định Ngành Nghề
-Khi bắt đầu tác vụ, Agent kiểm tra ngành nghề mục tiêu:
+### Bước 1: Định Tuyến Nhu Cầu & Xác Định Ngành Nghề (Intent & Domain Routing)
+Khi nhận câu lệnh từ người dùng, Agent gọi công cụ định tuyến nhu cầu trước tiên:
 ```python
-# Gọi qua MCP Tool: switch_taxonomy_project
-# Các project_id hỗ trợ:
-# - 'khaihoan_skincare': Spa & Phục hồi da
-# - 'fb_culinary': Nhà hàng & Cafe F&B
-# - 'fitness_gym': Phòng Gym & Thể hình Pro
-# - 'nha_khoa_clinic': Nha khoa & Niềng răng
+# Gọi qua MCP Tool: resolve_user_intent(user_query="Câu lệnh người dùng")
+# Hệ thống tự động phân tích intent, trả về:
+# - Ngành nghề đích (Target Domain: 'khaihoan_skincare', 'fb_culinary', 'fitness_gym', 'nha_khoa_clinic'...)
+# - Kỹ năng khuyến nghị (Recommended Skill)
+# - Chuỗi công cụ thực thi chuẩn tuần tự (Tool Execution Plan)
+# - Các nguyên tắc bất biến cần kiểm soát (Invariants)
 ```
+Nếu ngành nghề thay đổi, gọi `switch_taxonomy_project(project_id=...)` để kích hoạt bộ nhận diện tương ứng.
 
 ### Bước 2: Gom Cụm Phiên Thời Gian (Temporal Session Clustering)
 * Gọi `cluster_treatment_sessions(max_gap_minutes=35)`:

@@ -49,6 +49,17 @@ class TaxonomyManager:
         self.save()
         return self.get_active_project()
 
+    def register_project(self, project_id: str, name: str, domain: str, pillars: List[Dict[str, Any]], tag_groups: Optional[List[Dict[str, Any]]] = None) -> Dict[str, Any]:
+        projects = self.data.setdefault("projects", {})
+        projects[project_id] = {
+            "name": name,
+            "domain": domain,
+            "pillars": pillars or [],
+            "tag_groups": tag_groups or []
+        }
+        self.save()
+        return projects[project_id]
+
     def get_pillars(self) -> List[Dict[str, Any]]:
         return self.get_active_project().get("pillars", [])
 
