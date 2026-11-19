@@ -686,12 +686,12 @@ async function refresh() {
 
     // 5. Taxonomy Domain Sync
     if (state.taxonomy && state.taxonomy.active_project) {
-      const dSel = $('domainProjectSelect');
-      if (dSel && document.activeElement !== dSel) {
-        dSel.value = state.taxonomy.active_project.id || 'khaihoan_skincare';
+      const projName = state.taxonomy.active_project.name || '🌿 Khải Hoàn Skincare & Spa';
+      if ($('activeDomainDisplay')) {
+        $('activeDomainDisplay').textContent = projName;
       }
       if ($('mcpActiveDomainName')) {
-        $('mcpActiveDomainName').textContent = state.taxonomy.active_project.name || 'Spa & Chăm Sóc Da';
+        $('mcpActiveDomainName').textContent = projName;
       }
     }
 
@@ -878,24 +878,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         message('⚠️ Lỗi cập nhật: ' + err.message, true);
       } finally {
         btnUpdate.classList.remove('loading');
-      }
-    };
-  }
-
-  // 14. Domain / Ngành Nghề Project Switcher
-  const dSel = $('domainProjectSelect');
-  if (dSel) {
-    dSel.onchange = async () => {
-      const selectedText = dSel.options[dSel.selectedIndex].text;
-      message(`🔄 Đang chuyển đổi ngành sang: ${selectedText}...`);
-      try {
-        const res = await api('switch-taxonomy-project', { project_id: dSel.value });
-        message(`✅ ${res.message || 'Đã chuyển đổi ngành thành công!'}`);
-        await refresh();
-        await loadPhotos(true);
-        if (activeWorkflow === 'video') await loadVideos(true);
-      } catch (err) {
-        message(`⚠️ Lỗi chuyển đổi ngành: ${err.message}`, true);
       }
     };
   }
