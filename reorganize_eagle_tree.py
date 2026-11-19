@@ -270,82 +270,118 @@ def run():
     master_meta_file.write_text(json.dumps(master_data, ensure_ascii=False, indent=2), encoding='utf-8')
     print("✅ Đã cập nhật Sơ đồ cây 2 nhánh mới vào D:\\test.library\\metadata.json")
 
-    # 2. Re-classify all existing assets in D:\test.library\images
+    # 2. Re-classify all existing assets in D:\test.library\images with Session Clustering
+    from session_clusterer import SessionClusterer, parse_label_datetime
+
     info_dirs = list(IMAGES_DIR.glob("*.info"))
-    print(f"📦 Đang phân loại lại toàn bộ {len(info_dirs)} tư liệu hiện có...")
+    print(f"📦 Đang gom cụm theo phiên thời gian 35 phút và phân loại toàn bộ {len(info_dirs)} tư liệu...")
 
-    cache_items = []
-    photo_count = 0
-    video_count = 0
-
+    raw_asset_list = []
     for d in info_dirs:
         mf = d / "metadata.json"
         if not mf.exists():
             continue
         try:
             item_meta = json.loads(mf.read_text(encoding='utf-8'))
+            raw_asset_list.append({
+                'dir': d,
+                'mf': mf,
+                'meta': item_meta,
+                'name': item_meta.get("name", ""),
+                'tags': item_meta.get("tags", []),
+                'label': item_meta.get("name", "")
+            })
         except Exception:
             continue
 
-        name = item_meta.get("name", "")
-        tags = item_meta.get("tags", [])
-        ext = item_meta.get("ext", "")
-        star = item_meta.get("star", 5)
+    clusterer = SessionClusterer(max_gap_seconds=2100)
+    clustered_sessions = clusterer.cluster(raw_asset_list)
+    enriched_sessions = clusterer.enrich_sessions_with_customers(clustered_sessions, VIP_CUSTOMERS)
+    print(f"✅ Đã gom {len(raw_asset_list)} tư liệu thành {len(enriched_sessions)} ca liệu trình khách hàng!")
 
-        is_video = (
-            name.startswith("Video") or 
-            ext in ["mp4", "mov", "webm"] or 
-            any(t in ["Raw Video", "Footage CapCut", "Reels & TikTok", "Video Dọc 9:16", "Video_Dọc_9:16"] for t in tags)
-        )
+    cache_items = []
+    photo_count = 0
+    video_count = 0
 
-        cid, cname = get_customer_for_item(name, tags)
+    for sess in enriched_sessions:
+        for it in sess['items']:
+            d = it['dir']
+            mf = it['mf']
+            item_meta = it['meta']
 
-        new_folders = []
-        if is_video:
-            video_count += 1
-            new_folders.append(F_ROOT_VIDEO)
-            
-            # Sub-category for video
-            if any("Hook" in t for t in tags) or "Hook" in item_meta.get("annotation", ""):
-                new_folders.append(F_VIDEO_HOOK)
-            elif any("ASMR" in t for t in tags):
-                new_folders.append(F_VIDEO_ASMR)
-            elif any("Loi_Thoai" in t or "Bác sĩ" in t for t in tags):
-                new_folders.append(F_VIDEO_SPEECH)
-            elif any("Câm" in t or "Không_Tiếng" in t for t in tags):
-                new_folders.append(F_VIDEO_MUTE)
+            name = item_meta.get("name", "")
+            tags = item_meta.get("tags", [])
+            ext = item_meta.get("ext", "")
+            star = item_meta.get("star", 5)
+
+            is_video = (
+                name.startswith("Video") or 
+                ext in ["mp4", "mov", "webm"] or 
+                any(t in ["Raw Video", "Footage CapCut", "Reels & TikTok", "Video Dọc 9:16", "Video_Dọc_9:16"] for t in tags)
+            )
+
+            # Customer from session anchor or individual match
+            cid = it.get('customer_id')
+            cname = it.get('customer_name')
+            if not cid:
+                cid, cname = get_customer_for_item(name, tags)
+
+            phase = it.get('phase', '')
+
+            new_folders = []
+            if is_video:
+                video_count += 1
+                new_folders.append(F_ROOT_VIDEO)
+                
+                # Sub-category for video
+                if any("Hook" in t for t in tags) or "Hook" in item_meta.get("annotation", ""):
+                    new_folders.append(F_VIDEO_HOOK)
+                elif any("ASMR" in t for t in tags):
+                    new_folders.append(F_VIDEO_ASMR)
+                elif any("Loi_Thoai" in t or "Bác sĩ" in t for t in tags):
+                    new_folders.append(F_VIDEO_SPEECH)
+                elif any("Câm" in t or "Không_Tiếng" in t for t in tags):
+                    new_folders.append(F_VIDEO_MUTE)
+                else:
+                    new_folders.append(F_VIDEO_BROLL)
+
+                # Customer folder in video tree
+                if cid:
+                    new_folders.append(f"MV_{cid.upper()[:10]}")
             else:
-                new_folders.append(F_VIDEO_BROLL)
+                photo_count += 1
+                new_folders.append(F_ROOT_PHOTO)
 
-            # Customer folder in video tree
-            if cid:
-                new_folders.append(f"MV_{cid.upper()[:10]}")
-        else:
-            photo_count += 1
-            new_folders.append(F_ROOT_PHOTO)
+                # Sub-category for photo
+                if star >= 5 or any("Hero" in t for t in tags):
+                    new_folders.append(F_PHOTO_HERO)
+                
+                if phase in ('before', 'after') or any("Trước" in t or "Sau" in t or "Before" in t for t in tags):
+                    new_folders.append(F_PHOTO_BEFORE_AFTER)
 
-            # Sub-category for photo
-            if star >= 5 or any("Hero" in t for t in tags):
-                new_folders.append(F_PHOTO_HERO)
-            
-            if any("Trước" in t or "Sau" in t or "Before" in t for t in tags):
-                new_folders.append(F_PHOTO_BEFORE_AFTER)
+                if phase == 'in_process' or any("Thao tác" in t or "KTV" in t or "Găng" in t for t in tags):
+                    new_folders.append(F_PHOTO_TREATMENT)
 
-            if any("Thao tác" in t or "KTV" in t or "Găng" in t for t in tags):
-                new_folders.append(F_PHOTO_TREATMENT)
+                if any("Cơ sở" in t or "Máy" in t or "Phòng" in t for t in tags):
+                    new_folders.append(F_PHOTO_FACILITY)
 
-            if any("Cơ sở" in t or "Máy" in t or "Phòng" in t for t in tags):
-                new_folders.append(F_PHOTO_FACILITY)
+                # Customer folder in photo tree
+                if cid:
+                    new_folders.append(f"MP_{cid.upper()[:10]}")
 
-            # Customer folder in photo tree
-            if cid:
-                new_folders.append(f"MP_{cid.upper()[:10]}")
+            # Update item metadata
+            item_meta["folders"] = new_folders
+            if cid and not any(t.startswith(f"Khách_{cid}") for t in tags):
+                tags.append(f"Khách_{cid}")
+            if phase == 'before' and not any("Trước" in t for t in tags):
+                tags.append("Giai_Đoạn_Trước_Điều_Trị")
+            elif phase == 'after' and not any("Sau" in t or "Kết_Quả" in t for t in tags):
+                tags.append("Giai_Đoạn_Sau_Kết_Quả")
 
-        # Update item metadata
-        item_meta["folders"] = new_folders
-        item_meta["modificationTime"] = int(time.time() * 1000)
-        mf.write_text(json.dumps(item_meta, ensure_ascii=False, indent=2), encoding='utf-8')
-        cache_items.append(item_meta)
+            item_meta["tags"] = tags
+            item_meta["modificationTime"] = int(time.time() * 1000)
+            mf.write_text(json.dumps(item_meta, ensure_ascii=False, indent=2), encoding='utf-8')
+            cache_items.append(item_meta)
 
     # 3. Import VIP vertical videos from database into Eagle across all VIP customers
     print("🎬 Đang nhập video clip dọc VIP từ Google Photos vào nhánh '🎬 2. KHO VIDEO CLIPS'...")

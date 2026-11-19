@@ -578,3 +578,32 @@ class Catalog:
                         p = f
                         break
         return VideoAnalyzer.compile_video_intelligence(str(p), domain=domain)
+
+    def cluster_treatment_sessions(self, profile_id: str = '2e3744dd5f5e4b9ea37a4e5b6f49b98c', max_gap_minutes: int = 35) -> dict:
+        from session_clusterer import SessionClusterer
+        from reorganize_eagle_tree import VIP_CUSTOMERS
+        with self.store.connect() as db:
+            rows = db.execute('''
+                SELECT id, body FROM photos_items 
+                WHERE profile_id=?
+            ''', (profile_id,)).fetchall()
+        raw_items = []
+        for rid, bstr in rows:
+            b = json.loads(bstr)
+            raw_items.append({
+                'id': rid,
+                'label': b.get('label', ''),
+                'kind': b.get('kind', 'photo'),
+                'photo_url': b.get('photo_url', '')
+            })
+        clusterer = SessionClusterer(max_gap_seconds=max_gap_minutes * 60)
+        sessions = clusterer.cluster(raw_items)
+        enriched = clusterer.enrich_sessions_with_customers(sessions, VIP_CUSTOMERS)
+        matched = [s for s in enriched if s.get('customer_id')]
+        return {
+            "status": "success",
+            "total_items": len(raw_items),
+            "total_sessions": len(enriched),
+            "matched_vip_sessions": len(matched),
+            "sessions": enriched[:50]
+        }

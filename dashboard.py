@@ -589,6 +589,9 @@ def routes(catalog):
                 _eagle_cache['time']=0
                 _asset_cache['time']=0
                 result={'status':'success','data':res,'message':'Đã đồng bộ trí tuệ marketing và sơ đồ cây vào Eagle DAM!'}
+            elif command=='cluster-sessions':
+                res=await asyncio.to_thread(catalog.cluster_treatment_sessions)
+                result={'status':'success','data':res,'message':f"Đã gom cụm thành công {res.get('total_sessions')} ca liệu trình!"}
             elif command=='mcp-info':
                 from mcp_bridge import DESCRIPTIONS
                 result={

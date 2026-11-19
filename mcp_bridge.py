@@ -56,13 +56,14 @@ DESCRIPTIONS = {
     'enrich_and_sync_eagle': 'Enrich all assets in Eagle library with structured marketing intelligence: 3s TikTok Hook, CapCut editing pacing & audio vibes, customer case study tagging, and functional content pillar folders.',
     'filter_burst_duplicates': 'Analyze visual similarity and Laplacian sharpness to group rapid burst shots and identify the sharpest Hero asset without consuming AI tokens.',
     'analyze_video_asset': 'Simulate human 5s/10s video scrubbing: inspect keyframes, extract and classify audio track (dialogue/voice vs ASMR tool sounds vs ambient music), identify CapCut 3s hook highlights, and compile Eagle annotation.',
+    'cluster_treatment_sessions': 'Fast 0.05s temporal clustering: groups burst photos and vertical videos within 15-45 minute time windows into cohesive treatment sessions, propagating customer anchor identities and Before/In-Process/After journey phases.',
 }
 
 
 def schema(name):
     properties, required = {}, []
     for p in inspect.signature(getattr(catalog,name)).parameters.values():
-        if p.name in ('budget','limit','offset','size','extra_budget','max_steps','max_items','threshold'):
+        if p.name in ('budget','limit','offset','size','extra_budget','max_steps','max_items','threshold','max_gap_minutes'):
             value={'type':'integer'}
         elif p.name in ('asset_ids','crop'):
             value={'type':'array','items':{'type':'string' if p.name=='asset_ids' else 'number'}}

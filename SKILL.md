@@ -97,13 +97,14 @@ Agent giao tiếp trực tiếp qua MCP Server `gphotos-content-vision` tại `h
 | `list_photo_items` | Lấy danh sách ID, URL ảnh gốc, loại file (photo/video), duration từ kho. |
 | `get_photo_contact_sheet` | Đọc 12 ảnh đại diện cùng lúc trên 1 ma trận cuộn phim (Filmstrip) không tốn token. |
 | `filter_burst_duplicates` | Chấm điểm Laplacian lọc ảnh nét nhất (5 sao Hero) trong các chuỗi ảnh chụp liên tục. |
+| `cluster_treatment_sessions` | Gom cụm chuỗi tư liệu theo cửa sổ thời gian 35 phút (0.05s, 0% RAM): tự động nhóm ca điều trị, lan truyền danh tính khách hàng (Anchor) và xác định Before - In-Process - After. |
 | `analyze_video_asset` | Phân tích sâu video: tua nhanh 5s/10s, bóc phụ đề Faster-Whisper, đo tần số ASMR. |
 | `enrich_and_sync_eagle` | Rót toàn bộ thông tin trí tuệ marketing, Hook 3s và tag vào Eagle DAM. |
 | `commit_to_eagle` | Nhập các tư liệu đã duyệt vào thư viện Eagle chỉ định. |
 
 ---
 
-## 4. Quy Trình Vận Hành Chuẩn 5 Bước Của Agent
+## 4. Quy Trình Vận Hành Chuẩn 6 Bước Của Agent
 
 ```mermaid
 sequenceDiagram
@@ -132,16 +133,22 @@ Khi bắt đầu tác vụ, Agent kiểm tra ngành nghề mục tiêu:
 # - 'nha_khoa_clinic': Nha khoa & Niềng răng
 ```
 
-### Bước 2: Xem Nhanh Tư Liệu (Filmstrip Scrubbing 5s - 10s)
+### Bước 2: Gom Cụm Phiên Thời Gian (Temporal Session Clustering)
+* Gọi `cluster_treatment_sessions(max_gap_minutes=35)`:
+  * Nhóm các ảnh/video được chụp liên tục trong vòng 35 phút vào cùng một phiên dịch vụ/ca điều trị (xử lý ~3.000 tư liệu trong 0.05s, 0% RAM).
+  * Lan truyền danh tính khách hàng (Anchor Customer ID): Nếu trong cụm có 1 tư liệu mang tên hoặc nhãn khách hàng, toàn bộ các file còn lại trong cụm tự động nhận diện theo khách hàng đó mà không cần mô hình AI khuôn mặt nặng nề.
+  * Tự động chia tiến trình hành trình: 25% tư liệu đầu cụm được gán `Giai_Đoạn_Trước_Điều_Trị` (Before), phần giữa là `Giai_Đoạn_Đang_Điều_Trị` (In-Process), 25% cuối là `Giai_Đoạn_Sau_Kết_Quả` (After).
+
+### Bước 3: Xem Nhanh Tư Liệu (Filmstrip Scrubbing 5s - 10s)
 * Đối với ảnh chùm (Burst): Gọi `filter_burst_duplicates` để thuật toán đo độ biến thiên Laplacian tính độ sắc nét, tự động gán nhãn `⭐ 1.1 Ảnh 5 Sao Hero` cho ảnh nét nhất và gom các ảnh mờ hơn thành tư liệu phụ.
 * Đối với video: Không tải video nặng. Gọi `analyze_video_asset` để trích xuất 8 - 12 keyframes nhảy cóc (`00:01`, `00:03`, `00:08`, `00:15`...) ghép thành Contact Sheet tóm tắt toàn bộ diễn biến clip trong 1 giây.
 
-### Bước 3: Phân Tích Âm Thanh & Bóc Phụ Đề
+### Bước 4: Phân Tích Âm Thanh & Bóc Phụ Đề
 1. **Kiểm tra lời thoại (Speech):** Nếu có bác sĩ/KTV nói tiếng Việt, Faster-Whisper tự động bóc phụ đề từng giây và gán tag `Phu_De_Whisper`, xếp vào thư mục `🗣️ 2.2 Video Có Lời Thoại`.
 2. **Kiểm tra âm thanh dụng cụ (ASMR):** Phân tích phổ tần số. Nếu năng lượng tập trung ở dải tần cao **>4.5kHz** (tiếng nhíp gắp cồi mụn, tiếng xèo xèo chiên nướng, tiếng kim loại va chạm), gán tag `ASMR_Spa`, xếp vào thư mục `🎧 2.3 Video Âm Thanh ASMR`.
 3. **Kiểm tra video câm:** Nếu không có âm thanh hoặc tạp âm môi trường, gán tag `Video_Không_Tiếng`, xếp vào thư mục `🔇 2.5 Video Câm (Cần Lồng Nhạc BGM)`.
 
-### Bước 4: Soạn Thảo Annotation Chỉ Dẫn CapCut Cho Editor
+### Bước 5: Soạn Thảo Annotation Chỉ Dẫn CapCut Cho Editor
 Tạo phần mô tả chuẩn chỉ để người dựng clip mở Eagle là làm được ngay:
 ```markdown
 🎬 VIDEO FOOTAGE DỌC 9:16 (TIKTOK / REELS / SHORTS):
@@ -162,7 +169,7 @@ Tạo phần mô tả chuẩn chỉ để người dựng clip mở Eagle là l�
 • Link gốc xem lại trên Google Photos: [URL]
 ```
 
-### Bước 5: Đồng Bộ Hóa & Khắc Phục Lỗi File
+### Bước 6: Đồng Bộ Hóa & Khắc Phục Lỗi File
 Chạy đồng bộ vào Eagle DAM:
 * Đảm bảo tên file vật lý và trường `"name"` trong `metadata.json` khớp nhau từng ký tự.
 * Cập nhật file cache `%APPDATA%\Eagle\library-caches\5d59398c.txt`.
