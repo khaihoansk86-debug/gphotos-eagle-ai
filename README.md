@@ -6,6 +6,14 @@ Dashboard: http://127.0.0.1:8899/ (8898 cũng mở cùng ứng dụng).
 MCP: http://127.0.0.1:8898/mcp. Codex và Antigravity đã có địa chỉ này.
 Một process chạy cả hai cổng, dùng cùng SQLite tại `v2/data/catalog.sqlite` để giữ dữ liệu cũ.
 
+## Cấu Hình Kết Nối Dành Cho AI Agent (Antigravity / Claude / Cursor)
+
+Hệ thống đã tích hợp sẵn tệp cấu hình và tài liệu chỉ dẫn tự động cho AI Agent:
+* **`mcp_config.json` / `.mcp.json`**: Cấu hình chuẩn kết nối thẳng vào `http://127.0.0.1:8898/mcp`.
+* **`GEMINI.md` / `AGENTS.md`**: File chỉ dẫn tự động cho Antigravity (Anti) khi mở thư mục dự án này.
+* **`ANTIGRAVITY_CONNECT_TOOL.md`**: Cẩm nang kết nối và quy trình vận hành 45 MCP Tools.
+* **`SKILL.md`**: Cẩm nang kỹ năng `universal-media-classifier` đa ngành (Spa, F&B, Gym, Nha khoa).
+
 ## Luồng làm việc
 
 1. Chọn kho Photos hiện có hoặc thêm profile riêng, mở Photos để đăng nhập. Có thể dán link album. Đăng nhập là trên trang Google; phiên có thể hết hạn.
