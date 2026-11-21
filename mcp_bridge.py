@@ -57,6 +57,11 @@ DESCRIPTIONS = {
     'switch_taxonomy_project': 'Switch the active marketing project taxonomy (e.g. khaihoan_skincare, nha_khoa_clinic, fb_culinary) and automatically synchronize folder structures and tag groups to Eagle DAM.',
     'enrich_and_sync_eagle': 'Enrich all assets in Eagle library with structured marketing intelligence: 3s TikTok Hook, CapCut editing pacing & audio vibes, customer case study tagging, and functional content pillar folders.',
     'sync_all_photos_to_eagle': '100% ZERO-DROP FULL SYNC: Pulls ALL missing previews from Google Photos via open Chrome bridge, runs 35-min temporal session clustering & sharpness scoring, and classifies 100% of ALL photos and ALL videos into the 2-branch Eagle DAM tree without dropping any assets.',
+    'prefetch_all_photo_thumbnails': 'BACKEND STEP 1: Fast parallel batch download (10x concurrent, HD w1000-no) of all missing Google Photos thumbnails into local cache so AI can visually inspect 100% of the library without skipping.',
+    'get_classification_progress': 'BACKEND AUDIT: Returns exact 100%-coverage progress for a Google Photos profile: total items, cached thumbs, AI-classified count, unclassified remaining count, coverage %, and category breakdown.',
+    'get_unclassified_contact_sheet': 'BACKEND STEP 2 (AI VISION): Returns the next N (up to 24) UNCLASSIFIED items as ONE high-density numbered Contact Sheet JPEG image + structured JSON with 35-min session & customer hints. Guarantees AI visually sees 100% of items without duplicates or skips.',
+    'submit_photo_classifications': 'BACKEND STEP 3 (ZERO-DROP SAVE): Atomically saves AI visual classifications (item_id, category, star, customer_id, phase, tags, summary, capcut_note) into durable SQLite photo_classifications table.',
+    'apply_classifications_to_eagle': 'BACKEND STEP 4 (SYNC EAGLE): Materializes 100% of AI-verified classifications from SQLite into the strict 2-branch Eagle DAM tree (Photo Studio vs Video Clips) with 0 broken thumbnails.',
     'filter_burst_duplicates': 'Analyze visual similarity and Laplacian sharpness to group rapid burst shots and identify the sharpest Hero asset without consuming AI tokens.',
     'analyze_video_asset': 'Simulate human 5s/10s video scrubbing: inspect keyframes, extract and classify audio track (dialogue/voice vs ASMR tool sounds vs ambient music), identify CapCut 3s hook highlights, and compile Eagle annotation.',
     'cluster_treatment_sessions': 'Fast 0.05s temporal clustering: groups burst photos and vertical videos within 15-45 minute time windows into cohesive treatment sessions, propagating customer anchor identities and Before/In-Process/After journey phases.',
@@ -71,13 +76,13 @@ DESCRIPTIONS = {
 def schema(name):
     properties, required = {}, []
     for p in inspect.signature(getattr(catalog,name)).parameters.values():
-        if p.name in ('budget','limit','offset','size','extra_budget','max_steps','max_items','threshold','max_gap_minutes'):
+        if p.name in ('budget','limit','offset','size','extra_budget','max_steps','max_items','threshold','max_gap_minutes','batch_size','concurrency'):
             value={'type':'integer'}
         elif p.name in ('asset_ids','crop'):
             value={'type':'array','items':{'type':'string' if p.name=='asset_ids' else 'number'}}
         elif p.name=='decisions':
             value={'type':'array','items':{'type':'object'}}
-        elif p.name in ('refresh',):
+        elif p.name in ('refresh','only_cached'):
             value={'type':'boolean'}
         else:
             value={'type':'string'}

@@ -22,7 +22,7 @@ from reorganize_eagle_tree import (
     VIP_CUSTOMERS,
     F_ROOT_PHOTO, F_PHOTO_HERO, F_PHOTO_BEFORE_AFTER, F_PHOTO_TREATMENT, F_PHOTO_FACILITY, F_PHOTO_CUSTOMERS,
     F_ROOT_VIDEO, F_VIDEO_HOOK, F_VIDEO_SPEECH, F_VIDEO_ASMR, F_VIDEO_BROLL, F_VIDEO_MUTE, F_VIDEO_CUSTOMERS,
-    build_clean_2_branch_tree,
+    build_tree_structure,
     get_customer_for_item,
 )
 
@@ -64,7 +64,7 @@ def ensure_tree_with_archive(eagle_lib: Path) -> None:
     """Builds the strict 2-branch tree, including a secondary archive subfolder under Photos so nothing is ever dropped."""
     master_meta_file = eagle_lib / "metadata.json"
     master_data = json.loads(master_meta_file.read_text(encoding="utf-8")) if master_meta_file.exists() else {}
-    tree = build_clean_2_branch_tree()
+    tree = build_tree_structure()
 
     # Add '1.6 Ảnh Phụ & Lưu Trữ (Toàn Bộ Kho)' under Root 1 (Photos) so 100% of photos have a home
     photo_root = tree[0]

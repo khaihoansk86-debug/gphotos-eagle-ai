@@ -689,3 +689,29 @@ class Catalog:
             info = client.get_library_info() if client.is_connected() else {}
             target_lib = info.get('library', {}).get('path', info.get('path', r"D:\test.library"))
         return run_full_sync(profile_id=profile_id, eagle_lib_path=target_lib)
+
+    def _ai_engine(self):
+        from ai_classification_engine import AIClassificationEngine
+        return AIClassificationEngine(self.store)
+
+    def prefetch_all_photo_thumbnails(self, profile_id: str = '2e3744dd5f5e4b9ea37a4e5b6f49b98c', limit: int = 500, concurrency: int = 10) -> dict:
+        return self._ai_engine().prefetch_thumbnails(profile_id=profile_id, limit=limit, concurrency=concurrency)
+
+    def get_classification_progress(self, profile_id: str = '2e3744dd5f5e4b9ea37a4e5b6f49b98c') -> dict:
+        return self._ai_engine().get_progress(profile_id=profile_id)
+
+    def get_unclassified_contact_sheet(self, profile_id: str = '2e3744dd5f5e4b9ea37a4e5b6f49b98c', batch_size: int = 20, kind: str = 'all', only_cached: bool = True):
+        return self._ai_engine().get_unclassified_contact_sheet(
+            profile_id=profile_id, batch_size=batch_size, kind=kind, only_cached=only_cached
+        )
+
+    def submit_photo_classifications(self, profile_id: str, decisions: list) -> dict:
+        return self._ai_engine().submit_classifications(profile_id=profile_id, decisions=decisions)
+
+    def apply_classifications_to_eagle(self, profile_id: str = '2e3744dd5f5e4b9ea37a4e5b6f49b98c', eagle_lib_path: str = '') -> dict:
+        target_lib = eagle_lib_path
+        if not target_lib:
+            client = EagleClient()
+            info = client.get_library_info() if client.is_connected() else {}
+            target_lib = info.get('library', {}).get('path', info.get('path', r"D:\test.library"))
+        return self._ai_engine().apply_classifications_to_eagle(profile_id=profile_id, eagle_lib_path=target_lib)
