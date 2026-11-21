@@ -530,3 +530,297 @@ class AIClassificationEngine:
             "written_total": written_photos + written_videos,
             "missing_thumb_skipped": missing_thumb,
         }
+
+    # =========================================================================
+    # LAYER 2: DIRECT EAGLE DAM AI VISION INSPECTION & CLASSIFICATION
+    # Works standalone on ANY Eagle library OR enriched with Layer-1 Photos context
+    # =========================================================================
+    @staticmethod
+    def _find_eagle_preview_image(info_dir: Path, meta: Dict[str, Any]) -> Optional[Path]:
+        """Finds the best viewable image (thumbnail or media file) inside an Eagle .info directory."""
+        name = meta.get("name", "")
+        ext = (meta.get("ext") or "").lower()
+        # 1. Exact media image if it's a viewable raster image
+        if ext in ("jpg", "jpeg", "png", "webp", "bmp"):
+            exact = info_dir / f"{name}.{ext}"
+            if exact.exists():
+                return exact
+        # 2. Eagle generated thumbnail (_thumbnail.png / _thumbnail.jpg)
+        for cand in info_dir.glob("*_thumbnail.*"):
+            if cand.suffix.lower() in (".png", ".jpg", ".jpeg", ".webp"):
+                return cand
+        # 3. Any raster image in the .info folder
+        for cand in info_dir.iterdir():
+            if cand.suffix.lower() in (".jpg", ".jpeg", ".png", ".webp"):
+                return cand
+        return None
+
+    @staticmethod
+    def _is_eagle_video(meta: Dict[str, Any]) -> bool:
+        ext = (meta.get("ext") or "").lower()
+        name = meta.get("name") or ""
+        tags = meta.get("tags") or []
+        folders = meta.get("folders") or []
+        return (
+            ext in ("mp4", "mov", "webm", "avi", "mkv")
+            or F_ROOT_VIDEO in folders
+            or name.startswith("Video")
+            or any("Video" in t or "Reels" in t or "Hook" in t for t in tags)
+        )
+
+    def scan_eagle_library(self, eagle_lib_path: str = r"D:\test.library") -> Dict[str, Any]:
+        """LAYER 2 AUDIT: Scans an Eagle library directly (standalone, no Google Photos required)."""
+        eagle_lib = Path(eagle_lib_path)
+        images_dir = eagle_lib / "images"
+        if not images_dir.exists():
+            raise ValueError(f"Eagle images folder not found: {images_dir}")
+
+        total = 0
+        photos = 0
+        videos = 0
+        ai_verified = 0
+        has_real_album = 0
+        missing_preview = 0
+
+        for d in images_dir.glob("*.info"):
+            mf = d / "metadata.json"
+            if not mf.exists():
+                continue
+            try:
+                meta = json.loads(mf.read_text(encoding="utf-8"))
+            except Exception:
+                continue
+            if meta.get("isDeleted"):
+                continue
+            total += 1
+            if self._is_eagle_video(meta):
+                videos += 1
+            else:
+                photos += 1
+            tags = meta.get("tags") or []
+            if "AI_Vision_Verified" in tags:
+                ai_verified += 1
+            if any(t.startswith("Khách:") for t in tags):
+                has_real_album += 1
+            if not self._find_eagle_preview_image(d, meta):
+                missing_preview += 1
+
+        unreviewed = max(0, total - ai_verified)
+        return {
+            "status": "success",
+            "eagle_library": str(eagle_lib),
+            "total_items": total,
+            "photos": photos,
+            "videos": videos,
+            "ai_vision_verified": ai_verified,
+            "unreviewed_remaining": unreviewed,
+            "review_coverage_percent": round((ai_verified / total) * 100, 2) if total else 0.0,
+            "with_real_photos_album_context": has_real_album,
+            "missing_preview_image": missing_preview,
+        }
+
+    def get_eagle_review_sheet(
+        self,
+        eagle_lib_path: str = r"D:\test.library",
+        batch_size: int = 20,
+        kind: str = "all",
+        only_unreviewed: bool = True,
+    ) -> Tuple[Dict[str, Any], Optional[bytes]]:
+        """
+        LAYER 2 AI VISION: Reads up to 24 unreviewed items DIRECTLY from Eagle DAM
+        and renders a numbered Contact Sheet JPEG + JSON metadata (including any Layer-1 Photos context).
+        """
+        batch_size = max(1, min(int(batch_size), 24))
+        eagle_lib = Path(eagle_lib_path)
+        images_dir = eagle_lib / "images"
+        if not images_dir.exists():
+            raise ValueError(f"Eagle images folder not found: {images_dir}")
+
+        candidates = []
+        total_unreviewed = 0
+
+        for d in sorted(images_dir.glob("*.info")):
+            mf = d / "metadata.json"
+            if not mf.exists():
+                continue
+            try:
+                meta = json.loads(mf.read_text(encoding="utf-8"))
+            except Exception:
+                continue
+            if meta.get("isDeleted"):
+                continue
+            tags = meta.get("tags") or []
+            if only_unreviewed and "AI_Vision_Verified" in tags:
+                continue
+            is_vid = self._is_eagle_video(meta)
+            item_kind = "video" if is_vid else "photo"
+            if kind in ("photo", "video") and item_kind != kind:
+                continue
+            total_unreviewed += 1
+            preview = self._find_eagle_preview_image(d, meta)
+            if not preview:
+                continue
+            if len(candidates) < batch_size:
+                candidates.append({
+                    "eagle_id": meta.get("id") or d.stem,
+                    "kind": item_kind,
+                    "name": meta.get("name", ""),
+                    "tags": tags,
+                    "folders": meta.get("folders") or [],
+                    "url": meta.get("url", ""),
+                    "preview_path": preview,
+                })
+
+        if not candidates:
+            return {
+                "eagle_library": str(eagle_lib),
+                "batch_count": 0,
+                "remaining_unreviewed": total_unreviewed,
+                "note": "All Eagle items in this filter have been visually reviewed by AI Vision!",
+                "items": [],
+            }, None
+
+        cols = min(4, len(candidates))
+        rows_n = math.ceil(len(candidates) / cols)
+        tile_w, tile_h = 260, 290
+        canvas = Image.new("RGB", (cols * tile_w, rows_n * tile_h), (18, 22, 32))
+        draw = ImageDraw.Draw(canvas)
+
+        meta_items = []
+        for idx, it in enumerate(candidates):
+            r_i, c_i = divmod(idx, cols)
+            x0, y0 = c_i * tile_w, r_i * tile_h
+            try:
+                with Image.open(it["preview_path"]) as im:
+                    thumb = ImageOps.fit(im.convert("RGB"), (tile_w - 8, tile_h - 36))
+                    canvas.paste(thumb, (x0 + 4, y0 + 4))
+            except Exception:
+                draw.rectangle([x0 + 4, y0 + 4, x0 + tile_w - 4, y0 + tile_h - 36], fill=(40, 45, 60))
+
+            badge_color = (220, 38, 38) if it["kind"] == "video" else (14, 165, 233)
+            draw.rectangle([x0 + 8, y0 + 8, x0 + 96, y0 + 30], fill=badge_color)
+            draw.text((x0 + 14, y0 + 13), f"#{idx + 1:02d} {'VID' if it['kind'] == 'video' else 'IMG'}", fill=(255, 255, 255))
+
+            cust_tags = [t.replace("Khách:", "").strip() for t in it["tags"] if t.startswith("Khách:")]
+            cap = f"#{idx + 1:02d} {cust_tags[0] if cust_tags else it['name'][:26]}"
+            draw.text((x0 + 8, y0 + tile_h - 26), cap[:34], fill=(226, 232, 240))
+
+            meta_items.append({
+                "index": idx + 1,
+                "eagle_id": it["eagle_id"],
+                "kind": it["kind"],
+                "name": it["name"],
+                "customer_context": cust_tags,
+                "current_tags": it["tags"],
+                "url": it["url"],
+            })
+
+        buf = io.BytesIO()
+        canvas.save(buf, format="JPEG", quality=86)
+        payload = {
+            "eagle_library": str(eagle_lib),
+            "batch_count": len(meta_items),
+            "remaining_unreviewed": total_unreviewed,
+            "valid_photo_categories": ["hero", "before_after", "treatment", "facility", "archive"],
+            "valid_video_categories": ["hook_3s", "speech", "asmr", "b_roll", "mute"],
+            "instruction": (
+                "Inspect every numbered Eagle tile (#01..#NN) visually, then call apply_eagle_vision_decisions "
+                "with your business classification for EVERY eagle_id. Real customer album folders (AP_*/AV_*) and "
+                "'Khách: ...' tags are preserved automatically while functional folders are cleanly replaced."
+            ),
+            "items": meta_items,
+        }
+        return payload, buf.getvalue()
+
+    def apply_eagle_vision_decisions(
+        self,
+        eagle_lib_path: str = r"D:\test.library",
+        decisions: Optional[List[Dict[str, Any]]] = None,
+    ) -> Dict[str, Any]:
+        """
+        LAYER 2 WRITE (CLEAN OVERWRITE, ZERO STACKING):
+        Replaces functional folders with AI Vision-verified business folders,
+        preserves verified Layer-1 customer album folders (AP_*/AV_*) and 'Khách: ...' tags,
+        and marks each item with 'AI_Vision_Verified'.
+        """
+        if not isinstance(decisions, list) or not decisions:
+            raise ValueError("decisions must be a non-empty list of objects with eagle_id and category.")
+
+        eagle_lib = Path(eagle_lib_path)
+        images_dir = eagle_lib / "images"
+        now_ms = int(time.time() * 1000)
+
+        photo_cat_map = {
+            "hero": F_PHOTO_HERO,
+            "before_after": F_PHOTO_BEFORE_AFTER,
+            "treatment": F_PHOTO_TREATMENT,
+            "facility": F_PHOTO_FACILITY,
+            "archive": F_PHOTO_ARCHIVE,
+        }
+        video_cat_map = {
+            "hook_3s": F_VIDEO_HOOK,
+            "speech": F_VIDEO_SPEECH,
+            "asmr": F_VIDEO_ASMR,
+            "b_roll": F_VIDEO_BROLL,
+            "mute": F_VIDEO_MUTE,
+        }
+
+        updated = 0
+        not_found = 0
+        for d in decisions:
+            eid = str(d.get("eagle_id") or "").strip()
+            if not eid:
+                continue
+            mf = images_dir / f"{eid}.info" / "metadata.json"
+            if not mf.exists():
+                not_found += 1
+                continue
+            meta = json.loads(mf.read_text(encoding="utf-8"))
+            is_vid = self._is_eagle_video(meta)
+            cat = str(d.get("category") or ("b_roll" if is_vid else "archive")).strip().lower()
+            star = max(1, min(5, int(d.get("star") or (5 if cat in ("hero", "hook_3s") else 4))))
+            ai_tags = d.get("tags") if isinstance(d.get("tags"), list) else []
+            summary = str(d.get("summary") or "").strip()
+            capcut_note = str(d.get("capcut_note") or "").strip()
+
+            # Preserve ONLY verified real customer folders (AP_*/AV_*)
+            old_folders = meta.get("folders") or []
+            preserved_customer_folders = [
+                fid for fid in old_folders if str(fid).startswith("AP_") or str(fid).startswith("AV_")
+            ]
+            if is_vid:
+                new_folders = [F_ROOT_VIDEO, video_cat_map.get(cat, F_VIDEO_BROLL), *preserved_customer_folders]
+            else:
+                new_folders = [F_ROOT_PHOTO, photo_cat_map.get(cat, F_PHOTO_ARCHIVE), *preserved_customer_folders]
+
+            # Preserve verified real customer tags (`Khách: ...`) + add clean AI tags + AI_Vision_Verified
+            old_tags = meta.get("tags") or []
+            preserved_customer_tags = [t for t in old_tags if t.startswith("Khách:")]
+            base_tag = "Video_Dọc_9:16" if is_vid else "Ảnh_Tĩnh"
+            new_tags = list(dict.fromkeys([base_tag, *preserved_customer_tags, *ai_tags, "AI_Vision_Verified"]))
+
+            cust_str = ", ".join(t.replace("Khách:", "").strip() for t in preserved_customer_tags) or "Kho chung"
+            url = meta.get("url") or ""
+            annotation = (
+                f"{'🎬 VIDEO' if is_vid else '📸 ẢNH'} · ĐÃ PHÂN LOẠI TRỰC TIẾP BỞI AI VISION (LỚP 2)\n"
+                f"• Danh mục nghiệp vụ: {cat} ({star}⭐)\n"
+                f"• Khách hàng (Album thật): {cust_str}\n"
+                f"• Mô tả thị giác AI: {summary or meta.get('name', '')}\n"
+                + (f"• 🎬 Gợi ý dựng CapCut: {capcut_note}\n" if capcut_note else "")
+                + (f"• 🔗 Link gốc: {url}" if url else "")
+            )
+
+            meta["folders"] = list(dict.fromkeys(new_folders))
+            meta["tags"] = new_tags
+            meta["star"] = star
+            meta["annotation"] = annotation
+            meta["modificationTime"] = now_ms
+            mf.write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
+            updated += 1
+
+        return {
+            "status": "success",
+            "eagle_library": str(eagle_lib),
+            "updated_now": updated,
+            "not_found": not_found,
+        }

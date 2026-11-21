@@ -61,7 +61,10 @@ DESCRIPTIONS = {
     'get_classification_progress': 'BACKEND AUDIT: Returns exact 100%-coverage progress for a Google Photos profile: total items, cached thumbs, AI-classified count, unclassified remaining count, coverage %, and category breakdown.',
     'get_unclassified_contact_sheet': 'BACKEND STEP 2 (AI VISION): Returns the next N (up to 24) UNCLASSIFIED items as ONE high-density numbered Contact Sheet JPEG image + structured JSON with 35-min session & customer hints. Guarantees AI visually sees 100% of items without duplicates or skips.',
     'submit_photo_classifications': 'BACKEND STEP 3 (ZERO-DROP SAVE): Atomically saves AI visual classifications (item_id, category, star, customer_id, phase, tags, summary, capcut_note) into durable SQLite photo_classifications table.',
-    'apply_classifications_to_eagle': 'BACKEND STEP 4 (SYNC EAGLE): Materializes 100% of AI-verified classifications from SQLite into the strict 2-branch Eagle DAM tree (Photo Studio vs Video Clips) with 0 broken thumbnails.',
+    'apply_classifications_to_eagle': 'LAYER 1->2 SYNC: Materializes 100% of AI-verified Google Photos classifications from SQLite into the strict 2-branch Eagle DAM tree (Photo Studio vs Video Clips) with 0 broken thumbnails.',
+    'scan_eagle_library': 'LAYER 2 (STANDALONE EAGLE AUDIT): Scans ANY active Eagle library directly (no Google Photos required). Reports total photos/videos, AI_Vision_Verified count, unreviewed remaining count, and real album context coverage.',
+    'get_eagle_review_sheet': 'LAYER 2 (STANDALONE EAGLE AI VISION): Reads up to 24 unreviewed items directly from Eagle DAM and returns ONE numbered Contact Sheet JPEG + JSON metadata (preserving any Layer-1 customer context) so AI visually inspects & classifies them.',
+    'apply_eagle_vision_decisions': 'LAYER 2 (CLEAN OVERWRITE WRITE): Replaces functional folders with AI Vision-verified business folders (Hero/Before-After/Treatment/Facility/Hook3s/B-Roll/Archive), preserves real customer album folders & tags, and marks AI_Vision_Verified.',
     'filter_burst_duplicates': 'Analyze visual similarity and Laplacian sharpness to group rapid burst shots and identify the sharpest Hero asset without consuming AI tokens.',
     'analyze_video_asset': 'Simulate human 5s/10s video scrubbing: inspect keyframes, extract and classify audio track (dialogue/voice vs ASMR tool sounds vs ambient music), identify CapCut 3s hook highlights, and compile Eagle annotation.',
     'cluster_treatment_sessions': 'Fast 0.05s temporal clustering: groups burst photos and vertical videos within 15-45 minute time windows into cohesive treatment sessions, propagating customer anchor identities and Before/In-Process/After journey phases.',
@@ -82,7 +85,7 @@ def schema(name):
             value={'type':'array','items':{'type':'string' if p.name=='asset_ids' else 'number'}}
         elif p.name=='decisions':
             value={'type':'array','items':{'type':'object'}}
-        elif p.name in ('refresh','only_cached'):
+        elif p.name in ('refresh','only_cached','only_unreviewed'):
             value={'type':'boolean'}
         else:
             value={'type':'string'}

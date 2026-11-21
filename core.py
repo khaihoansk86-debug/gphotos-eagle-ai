@@ -715,3 +715,27 @@ class Catalog:
             info = client.get_library_info() if client.is_connected() else {}
             target_lib = info.get('library', {}).get('path', info.get('path', r"D:\test.library"))
         return self._ai_engine().apply_classifications_to_eagle(profile_id=profile_id, eagle_lib_path=target_lib)
+
+    def _resolve_eagle_lib(self, eagle_lib_path: str = '') -> str:
+        if eagle_lib_path:
+            return eagle_lib_path
+        client = EagleClient()
+        info = client.get_library_info() if client.is_connected() else {}
+        return info.get('library', {}).get('path', info.get('path', r"D:\test.library"))
+
+    def scan_eagle_library(self, eagle_lib_path: str = '') -> dict:
+        return self._ai_engine().scan_eagle_library(eagle_lib_path=self._resolve_eagle_lib(eagle_lib_path))
+
+    def get_eagle_review_sheet(self, eagle_lib_path: str = '', batch_size: int = 20, kind: str = 'all', only_unreviewed: bool = True):
+        return self._ai_engine().get_eagle_review_sheet(
+            eagle_lib_path=self._resolve_eagle_lib(eagle_lib_path),
+            batch_size=batch_size,
+            kind=kind,
+            only_unreviewed=only_unreviewed,
+        )
+
+    def apply_eagle_vision_decisions(self, decisions: list, eagle_lib_path: str = '') -> dict:
+        return self._ai_engine().apply_eagle_vision_decisions(
+            eagle_lib_path=self._resolve_eagle_lib(eagle_lib_path),
+            decisions=decisions,
+        )
