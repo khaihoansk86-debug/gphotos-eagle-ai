@@ -95,6 +95,8 @@ Agent giao tiếp trực tiếp qua MCP Server `gphotos-content-vision` tại `h
 | `switch_taxonomy_project` | Chuyển đổi ngữ cảnh ngành nghề và tự động kích hoạt bộ nhận diện tương ứng. |
 | `get_photo_inventory` | Kiểm tra tiến độ quét và số lượng tư liệu đã nạp từ Google Photos. |
 | `list_photo_items` | Lấy danh sách ID, URL ảnh gốc, loại file (photo/video), duration từ kho. |
+| `create_photo_profile` | **Tạo Profile Photos:** Đăng ký thêm tài khoản / kho Google Photos mới vào hệ thống. |
+| `delete_photo_profile` | **Xóa Profile Photos:** Xóa tài khoản Google Photos không dùng và dọn dẹp thư mục lưu trữ cục bộ. |
 | `get_photo_contact_sheet` | Đọc 12 ảnh đại diện cùng lúc trên 1 ma trận cuộn phim (Filmstrip) không tốn token. |
 | `filter_burst_duplicates` | Chấm điểm Laplacian lọc ảnh nét nhất (5 sao Hero) trong các chuỗi ảnh chụp liên tục. |
 | `cluster_treatment_sessions` | Gom cụm chuỗi tư liệu theo cửa sổ thời gian 35 phút (0.05s, 0% RAM): tự động nhóm ca điều trị, lan truyền danh tính khách hàng (Anchor) và xác định Before - In-Process - After. |
