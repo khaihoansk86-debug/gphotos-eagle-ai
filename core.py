@@ -680,3 +680,12 @@ class Catalog:
             "registered_project_id": project_id,
             "project": proj
         }
+
+    def sync_all_photos_to_eagle(self, profile_id: str = '2e3744dd5f5e4b9ea37a4e5b6f49b98c', eagle_lib_path: str = '') -> dict:
+        from full_sync_eagle import run_full_sync
+        target_lib = eagle_lib_path
+        if not target_lib:
+            client = EagleClient()
+            info = client.get_library_info() if client.is_connected() else {}
+            target_lib = info.get('library', {}).get('path', info.get('path', r"D:\test.library"))
+        return run_full_sync(profile_id=profile_id, eagle_lib_path=target_lib)

@@ -448,6 +448,34 @@ def routes(catalog):
                 _eagle_cache['time']=0
                 ok, folders, info, libs, stats = await asyncio.to_thread(get_eagle_snapshot)
                 result={'status':'success','connected':ok,'info':info,'stats':stats,'message':'Đã cập nhật số liệu Eagle DAM!'}
+            elif command=='full-sync-eagle':
+                pid=(data.get('profile_id') or '').strip()
+                if not pid:
+                    with catalog.store.connect() as db:
+                        chosen=db.execute("SELECT value FROM preferences WHERE key='selected_profile'").fetchone()
+                        pid=chosen['value'] if chosen else '2e3744dd5f5e4b9ea37a4e5b6f49b98c'
+                lib_path=(data.get('library_path') or _eagle_cache.get('info',{}).get('path') or r"D:\test.library")
+                with operation_lock:
+                    if operations.get('full_sync',{}).get('status')=='running':
+                        return JSONResponse({'status':'running','message':'Tiến trình kéo & phân loại 100% kho đang chạy!'})
+                    operations['full_sync']={'id':'full_sync','name':'Kéo & Phân Loại 100% Kho','status':'running','progress':5,'message':'Đang khởi động kéo & phân loại toàn bộ kho...'}
+
+                def run_bg_full_sync():
+                    from full_sync_eagle import run_full_sync
+                    def on_prog(msg, pct):
+                        with operation_lock:
+                            operations['full_sync']={'id':'full_sync','name':'Kéo & Phân Loại 100% Kho','status':'running','progress':pct,'message':msg}
+                    try:
+                        res=run_full_sync(profile_id=pid, eagle_lib_path=lib_path, progress_cb=on_prog)
+                        _eagle_cache['time']=0
+                        with operation_lock:
+                            operations['full_sync']={'id':'full_sync','name':'Kéo & Phân Loại 100% Kho','status':'done','progress':100,'message':f"Hoàn tất! Đã kéo & phân loại {res['imported_photos']:,} ảnh + {res['imported_videos']:,} video vào Eagle.",'result':res}
+                    except Exception as exc:
+                        with operation_lock:
+                            operations['full_sync']={'id':'full_sync','name':'Kéo & Phân Loại 100% Kho','status':'error','progress':100,'message':f'Lỗi: {exc}'}
+
+                threading.Thread(target=run_bg_full_sync, daemon=True).start()
+                result={'status':'started','message':'Đã bắt đầu kéo & phân loại 100% toàn bộ kho Photos vào Eagle! Theo dõi tiến trình trên thanh trạng thái.'}
             elif command=='eagle-libraries':
                 result=await asyncio.to_thread(catalog.get_eagle_libraries)
             elif command=='eagle-select':

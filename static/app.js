@@ -328,7 +328,9 @@ function renderPhotoStatsAndProgress(state, activeId) {
 
   // Sync live backend background task if no local foreground task is active
   if (!localTaskRunning) {
-    const runningOps = (state.operations || []).filter(op => op.status === 'running');
+    const ops = state.operations || [];
+    const runningOps = ops.filter(op => op.status === 'running');
+    const fullSyncOp = ops.find(op => op.id === 'full_sync');
     if (invObj.status === 'running') {
       const step = invObj.step || 0;
       const pct = Math.min(98, Math.max(8, Math.round((step / 300) * 100)));
@@ -336,7 +338,17 @@ function renderPhotoStatsAndProgress(state, activeId) {
     } else if (runningOps.length > 0) {
       const op = runningOps[0];
       const pct = op.progress ?? 50;
+      window._lastBgOpStatus = 'running';
       setLiveActivity('running', op.message || `Đang chạy tác vụ nền: ${op.name || 'Xử lý dữ liệu'}...`, pct);
+    } else if (fullSyncOp && window._lastBgOpStatus === 'running') {
+      window._lastBgOpStatus = fullSyncOp.status;
+      if (fullSyncOp.status === 'done') {
+        finishLiveTask(fullSyncOp.message || 'Hoàn tất kéo & phân loại 100% kho!', false);
+        showToast('✅ ' + (fullSyncOp.message || 'Đã kéo & phân loại xong 100% kho!'));
+      } else if (fullSyncOp.status === 'error') {
+        finishLiveTask(fullSyncOp.message || 'Lỗi khi kéo toàn bộ kho!', true);
+        showToast(fullSyncOp.message || 'Lỗi khi kéo toàn bộ kho!', true);
+      }
     }
   }
 }
@@ -570,6 +582,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
+  // 100% Zero-Drop Full Sync Photos -> Eagle
+  $('btnFullSyncEagle')?.addEventListener('click', async () => {
+    if (!currentProfile) return;
+    window._lastBgOpStatus = 'running';
+    setLiveActivity('running', 'Đang khởi động kéo & phân loại 100% toàn bộ kho Photos vào Eagle...', 5);
+    try {
+      const res = await api('full-sync-eagle', { profile_id: currentProfile, library_path: currentEaglePath });
+      showToast('🚀 ' + (res.message || 'Đang kéo toàn bộ kho...'));
+      setTimeout(refresh, 1200);
+    } catch (err) {
+      window._lastBgOpStatus = 'error';
+      finishLiveTask(`Lỗi khởi động đồng bộ: ${err.message}`, true);
+      showToast(err.message, true);
+    }
+  });
+
   // Open Eagle folder
   $('btnOpenEagleDirect')?.addEventListener('click', async () => {
     startLiveTask('Đang mở thư viện Eagle DAM...', 45, 90);
@@ -663,6 +691,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  // Auto-refresh every 6 seconds to catch live background scans
-  setInterval(refresh, 6000);
+  // Auto-refresh every 3 seconds to keep live progress bar super smooth
+  setInterval(refresh, 3000);
 });
