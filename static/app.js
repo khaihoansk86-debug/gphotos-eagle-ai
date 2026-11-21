@@ -645,6 +645,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // MCP modal triggers
   $('btnOpenMcpHub')?.addEventListener('click', openMcpModal);
+  $('btnDownloadConnectOpen')?.addEventListener('click', openMcpModal);
   $('btnCloseMcpModal')?.addEventListener('click', closeMcpModal);
   $('mcpModalBackdrop')?.addEventListener('click', closeMcpModal);
   $('mcpToolSearchInput')?.addEventListener('input', e => renderMcpTools(e.target.value));

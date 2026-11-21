@@ -31,6 +31,9 @@
           <span class="pulse-dot"></span>
           <span id="mcpStatusLabel">MCP: 8898 (47 Tools)</span>
         </button>
+        <button id="btnDownloadConnectOpen" class="ios-pill" title="Tải file batch tự động kết nối Antigravity (.command cho Mac / .bat cho Windows)">
+          <span>⬇️</span> File Kết Nối Anti
+        </button>
         <button id="btnRefreshAll" class="ios-pill" title="Làm mới toàn bộ số liệu Photos và Eagle">
           <span>↻</span> Làm mới
         </button>
@@ -240,7 +243,11 @@
             <div class="field-label">HTTP MCP Endpoint</div>
             <code class="mcp-code">http://127.0.0.1:8898/mcp</code>
           </div>
-          <button id="btnCopyMcpConfig" class="ios-btn btn-ios-primary">📋 Sao chép JSON</button>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <a href="/download/connect-mac" download="0_Ket_Noi_Antigravity_MCP.command" class="ios-btn btn-ios-primary" style="text-decoration:none;">🍎 Tải File Mac (.command)</a>
+            <a href="/download/connect-win" download="0_Ket_Noi_Antigravity_MCP.bat" class="ios-btn btn-glass-blue" style="text-decoration:none;">🪟 Tải File Win (.bat)</a>
+            <button id="btnCopyMcpConfig" class="ios-btn btn-glass">📋 Sao chép JSON</button>
+          </div>
         </div>
         <input type="text" id="mcpToolSearchInput" class="ios-input" placeholder="🔍 Tìm kiếm công cụ MCP..." style="width:100%;margin-bottom:12px;">
         <div id="mcpToolsList" class="modal-list"></div>

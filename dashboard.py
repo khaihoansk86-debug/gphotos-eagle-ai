@@ -642,8 +642,33 @@ def routes(catalog):
         except Exception as exc:
             return JSONResponse({'error':str(exc)[:500]},status_code=400)
 
+    async def download_connect_script(request):
+        target = request.path_params.get('target', '')
+        if target == 'connect-mac':
+            fp = ROOT / '0_Ket_Noi_Antigravity_MCP.command'
+            if not fp.exists():
+                return Response(status_code=404)
+            content = fp.read_text(encoding='utf-8').replace('\r\n', '\n')
+            return Response(
+                content.encode('utf-8'),
+                media_type='application/x-sh',
+                headers={'Content-Disposition': 'attachment; filename="0_Ket_Noi_Antigravity_MCP.command"', 'Cache-Control': 'no-store'}
+            )
+        elif target == 'connect-win':
+            fp = ROOT / '0_Ket_Noi_Antigravity_MCP.bat'
+            if not fp.exists():
+                return Response(status_code=404)
+            content = fp.read_text(encoding='utf-8').replace('\r\n', '\n').replace('\n', '\r\n')
+            return Response(
+                content.encode('utf-8'),
+                media_type='application/x-bat',
+                headers={'Content-Disposition': 'attachment; filename="0_Ket_Noi_Antigravity_MCP.bat"', 'Cache-Control': 'no-store'}
+            )
+        return Response(status_code=404)
+
     return [
         Route('/',page),Route('/app.js',asset, name='app'),Route('/style.css',asset,name='css'),
+        Route('/download/{target}',download_connect_script),
         Route('/api/state',state),Route('/api/js-code',crawler),Route('/api/{command}',action,methods=['POST']),
         Route('/thumb/{id}',thumb),Route('/photos-thumb/{profile_id}/{item_id}',photo_thumb),
         Route('/eagle-thumb/{id}',eagle_thumb)]
