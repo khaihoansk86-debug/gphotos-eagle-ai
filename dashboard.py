@@ -208,12 +208,13 @@ def routes(catalog):
     def get_eagle_snapshot():
         now=time.time()
         if now-_eagle_cache['time']<8 and _eagle_cache['time'] > 0:
-            return _eagle_cache['ok'],_eagle_cache['folders'],_eagle_cache['info'],_eagle_cache['libraries']
+            return _eagle_cache['ok'],_eagle_cache['folders'],_eagle_cache['info'],_eagle_cache['libraries'],_eagle_cache.get('stats',{})
         client=EagleClient()
         eagle_ok=client.is_connected()
         eagle_folders={}
         eagle_info={}
         eagle_libs=[]
+        eagle_stats={'total':0,'photos':0,'videos':0,'folders':0}
         if eagle_ok:
             try:
                 folders=client.request('/api/folder/list') or []
@@ -225,11 +226,22 @@ def routes(catalog):
                             m.update(flatten(f['children']))
                     return m
                 f_map=flatten(folders)
-                items=client.request('/api/item/list?limit=1000') or []
+                items=client.request('/api/item/list?limit=5000') or []
+                v_cnt=0
+                p_cnt=0
                 for it in items:
+                    ext=(it.get('ext') or '').lower()
+                    nm=(it.get('name') or '')
+                    tags=it.get('tags') or []
+                    is_vid=ext in ('mp4','mov','webm','avi','mkv') or nm.startswith('Video') or any('Video' in t or 'Reels' in t for t in tags)
+                    if is_vid:
+                        v_cnt+=1
+                    else:
+                        p_cnt+=1
                     for fid in it.get('folders',[]):
                         name=f_map.get(fid,fid)
                         eagle_folders[name]=eagle_folders.get(name,0)+1
+                eagle_stats={'total':len(items),'photos':p_cnt,'videos':v_cnt,'folders':len(f_map)}
                 lib_data=catalog.get_eagle_libraries()
                 eagle_info=lib_data.get('current',{})
                 eagle_libs=lib_data.get('libraries',[])
@@ -240,7 +252,8 @@ def routes(catalog):
         _eagle_cache['folders']=eagle_folders
         _eagle_cache['info']=eagle_info
         _eagle_cache['libraries']=eagle_libs
-        return eagle_ok,eagle_folders,eagle_info,eagle_libs
+        _eagle_cache['stats']=eagle_stats
+        return eagle_ok,eagle_folders,eagle_info,eagle_libs,eagle_stats
 
     def snapshot():
         with catalog.store.connect() as db:
@@ -256,7 +269,7 @@ def routes(catalog):
         with operation_lock:
             tasks=[dict(v) for v in operations.values()]
         
-        eagle_ok,eagle_folders,eagle_info,eagle_libs=get_eagle_snapshot()
+        eagle_ok,eagle_folders,eagle_info,eagle_libs,eagle_stats=get_eagle_snapshot()
 
         # Taxonomy and MCP State
         taxonomy_mgr = TaxonomyManager()
@@ -273,7 +286,7 @@ def routes(catalog):
         return {'token':TOKEN,'profiles':profiles,'selected_profile':selected_profile,
                 'preview':catalog.get_source_preview(),'monitor':catalog.get_monitor(),
                 'albums':albums,'albums_count':albums_count,'total_items_in_albums':total_items_in_albums,'eagle_folders':eagle_folders,
-                'eagle_info':eagle_info,'eagle_libraries':eagle_libs,
+                'eagle_info':eagle_info,'eagle_libraries':eagle_libs,'eagle_stats':eagle_stats,
                 'photo_status':{p['id']:catalog.get_photo_profile_status(p['id']) for p in profiles},
                 'photo_inventory':{p['id']:catalog.list_photo_items(p['id'],limit=5) for p in profiles},
                 'chat_messages':catalog.list_chat_messages(limit=50),'sources':catalog.list_sources(),'jobs':catalog.list_jobs(),
@@ -417,14 +430,24 @@ def routes(catalog):
                 _eagle_cache['time']=0
                 result={'status':'success','message':'Đã hoàn tất phân loại tư liệu vào 5 nhóm Content và 20 khách hàng trong Eagle!','output':output[:500]}
             elif command=='open-eagle':
-                import os
+                import os, sys, subprocess
+                lib_path=(data.get('library_path') or _eagle_cache.get('info',{}).get('path') or r"D:\test.library")
                 def do_open():
                     try:
-                        os.startfile(r"D:\test.library")
+                        if sys.platform == 'darwin':
+                            subprocess.Popen(['open', lib_path])
+                        elif os.name == 'nt':
+                            os.startfile(lib_path)
+                        else:
+                            subprocess.Popen(['xdg-open', lib_path])
                     except Exception:
                         pass
                 await asyncio.to_thread(do_open)
-                result={'status':'success','message':'Đã mở thư mục Eagle test.library'}
+                result={'status':'success','message':f'Đã mở thư mục Eagle: {lib_path}'}
+            elif command=='eagle-refresh':
+                _eagle_cache['time']=0
+                ok, folders, info, libs, stats = await asyncio.to_thread(get_eagle_snapshot)
+                result={'status':'success','connected':ok,'info':info,'stats':stats,'message':'Đã cập nhật số liệu Eagle DAM!'}
             elif command=='eagle-libraries':
                 result=await asyncio.to_thread(catalog.get_eagle_libraries)
             elif command=='eagle-select':

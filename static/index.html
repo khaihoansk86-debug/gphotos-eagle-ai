@@ -2,473 +2,214 @@
 <html lang="vi">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Khải Hoàn Skincare ✕ Eagle DAM · macOS Dashboard</title>
-  <link rel="stylesheet" href="/style.css?v=20261113-hub">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Photos ➔ Eagle · Quản Lý Profile & Thống Kê</title>
+  <link rel="stylesheet" href="/style.css?v=20261121-minimal">
 </head>
 <body>
+  <div class="app-shell">
 
-<div class="macos-window">
-
-  <!-- macOS TITLEBAR / TRAFFIC LIGHTS -->
-  <header class="macos-titlebar">
-    <div class="traffic-lights">
-      <span class="tl-btn tl-close" title="Đóng"></span>
-      <span class="tl-btn tl-minimize" title="Thu nhỏ"></span>
-      <span class="tl-btn tl-maximize" title="Mở rộng"></span>
-    </div>
-
-    <div class="titlebar-center">
-      <span class="app-icon-badge">
-        <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-      </span>
-      <span class="window-title">Khải Hoàn Skincare · Studio Hub</span>
-      <span class="window-badge">macOS Sonoma Edition</span>
-    </div>
-
-    <!-- THEME PICKER -->
-    <div class="theme-switcher" role="group" aria-label="Chọn màu nền">
-      <button class="theme-btn active" data-theme="spa-mint" title="Xanh Ngọc Spa tươi mát">🌿 Spa Mint</button>
-      <button class="theme-btn" data-theme="ocean-aurora" title="Cực quang macOS">🌌 Aurora</button>
-      <button class="theme-btn" data-theme="titanium-slate" title="Titanium Slate dịu mắt">🪨 Slate</button>
-      <button class="theme-btn" data-theme="sunset-amber" title="Hoàng hôn ấm áp">🌅 Sunset</button>
-    </div>
-
-    <div class="titlebar-right">
-      <button id="btnSystemUpdate" class="update-pill-btn" title="Kiểm tra và cập nhật phiên bản mới nhất từ Git">
-        <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-        <span class="btn-text">Cập nhật</span>
-      </button>
-      <span id="eagleStatus" class="status-pill">
-        <span class="status-dot-pulse"></span> Eagle DAM
-      </span>
-      <span id="photosStatus" class="status-pill">
-        <span class="status-dot-pulse"></span> Google Photos
-      </span>
-    </div>
-  </header>
-
-  <!-- macOS WINDOW BODY -->
-  <main class="macos-body">
-
-    <!-- 1. HERO KPI WIDGETS -->
-    <section class="kpi-banner">
-      <!-- Card 1: Photos -->
-      <div class="kpi-card">
-        <div class="kpi-icon-wrapper kpi-icon-photos">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-        </div>
-        <div class="kpi-body">
-          <strong class="kpi-value" id="kpiPhotos">629</strong>
-          <span class="kpi-label">Ảnh trong kho Photos</span>
+    <!-- HEADER BAR -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <span class="app-logo">⚡</span>
+        <div>
+          <h1 class="app-title">Photos ➔ Eagle Studio</h1>
+          <span class="app-subtitle">Quản lý Profile Google Photos · Thư viện Eagle · Thống kê</span>
         </div>
       </div>
 
-      <!-- Card 2: Videos -->
-      <div class="kpi-card">
-        <div class="kpi-icon-wrapper kpi-icon-videos">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="5" y="2" width="14" height="20" rx="3"/><polygon points="10 8 16 12 10 16 10 8"/><line x1="9" y1="18" x2="15" y2="18"/></svg>
-        </div>
-        <div class="kpi-body">
-          <strong class="kpi-value" id="kpiVideos">507</strong>
-          <span class="kpi-label">Video clip dọc (9:16)</span>
-        </div>
-      </div>
-
-      <!-- Card 3: Albums -->
-      <div class="kpi-card kpi-card-clickable" id="kpiCardAlbums" title="Bấm để xem danh sách thống kê toàn bộ Album khách hàng" style="cursor:pointer;transition:transform 0.18s ease, border-color 0.18s ease;">
-        <div class="kpi-icon-wrapper kpi-icon-clients">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        </div>
-        <div class="kpi-body">
-          <div style="display:flex;align-items:baseline;gap:6px;">
-            <strong class="kpi-value" id="kpiAlbums">98</strong>
-            <span style="font-size:11px;color:#38bdf8;font-weight:600;">(Xem chi tiết ➔)</span>
-          </div>
-          <span class="kpi-label">Hồ sơ album khách hàng</span>
-        </div>
-      </div>
-
-      <!-- Card 4: Eagle -->
-      <div class="kpi-card">
-        <div class="kpi-icon-wrapper kpi-icon-eagle">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><polyline points="9 13 12 16 17 11"/></svg>
-        </div>
-        <div class="kpi-body">
-          <strong class="kpi-value" id="kpiClassified">631</strong>
-          <span class="kpi-label">Đã phân loại vào Eagle</span>
-        </div>
-      </div>
-    </section>
-
-    <!-- 2. EXECUTIVE STATUS STRIP (ĐỒNG BỘ THÔNG TIN TỰ ĐỘNG QUA ANTIGRAVITY AI) -->
-    <section class="executive-status-strip">
-      <div class="status-chip-group">
-        <div class="status-info-chip profile-control-chip" style="gap:8px;">
-          <span class="status-dot-pulse"></span>
-          <span class="chip-label">Kho Google Photos:</span>
-          <select id="photoProfileSelect" class="profile-dropdown-select" title="Chọn profile Google Photos"></select>
-          <button id="btnAddPhotoProfile" type="button" class="btn-profile-pill btn-profile-add" title="Thêm profile Google Photos mới">
-            <span>➕</span> Thêm Profile
-          </button>
-          <button id="btnDeletePhotoProfile" type="button" class="btn-profile-pill btn-profile-del" title="Xóa profile Google Photos đang chọn">
-            <span>🗑️</span> Xóa Profile
-          </button>
-          <button id="btnOpenPhotosChrome" type="button" class="btn-profile-pill btn-profile-login" title="Mở trình duyệt Google Photos để đăng nhập kho này">
-            <span>🌐</span> Mở Đăng Nhập
-          </button>
-          <strong id="hubAccountDisplay" class="chip-val" style="opacity:0.85; margin-left:4px;"></strong>
-        </div>
-        <span class="status-info-chip">
-          <span class="status-dot-pulse"></span>
-          <span class="chip-label">Eagle DAM:</span>
-          <strong id="hubEagleDisplay" class="chip-val">test.library (D:\test.library)</strong>
-        </span>
-        <span class="status-info-chip" title="Ngữ cảnh dự án do Antigravity AI điều phối tự động qua MCP">
-          <span class="chip-label">🏷️ Dự án:</span>
-          <strong id="activeDomainDisplay" class="chip-val">🌿 Khải Hoàn Skincare & Spa</strong>
-        </span>
-      </div>
-      <div style="display:flex;align-items:center;gap:10px;margin-left:auto;">
-        <button id="btnOpenProfileModal" class="mcp-hub-pill-btn" style="background:rgba(56,189,248,0.12); border-color:rgba(56,189,248,0.35); color:#38bdf8;" title="Mở danh sách quản lý Profile Google Photos">
-          <span>📁</span>
-          <span class="mcp-hub-label">Quản Lý Profile</span>
+      <div class="topbar-right">
+        <button id="btnOpenMcpHub" class="pill-btn pill-mcp" title="Xem cổng kết nối MCP cho AI Agent">
+          <span class="dot dot-green"></span>
+          <span id="mcpStatusLabel">MCP: 8898 (47 Tools)</span>
         </button>
-        <button id="btnOpenMcpHub" class="mcp-hub-pill-btn" title="Xem liên thông MCP Bridge với Antigravity AI">
-          <span class="status-dot-pulse" style="background:#22c55e;"></span>
-          <span class="mcp-hub-label">MCP: 8898 (47 Tools)</span>
+        <button id="btnRefreshAll" class="pill-btn" title="Làm mới toàn bộ số liệu Photos và Eagle">
+          <span>↻</span> Làm mới
         </button>
-        <div class="status-info-chip chip-ai">
-          <span class="chip-label">Điều phối:</span>
-          <strong class="chip-val">🤖 Antigravity AI</strong>
-        </div>
+        <button id="btnSystemUpdate" class="pill-btn pill-update" title="Cập nhật phiên bản mới nhất từ GitHub (git pull)">
+          <span>🔄</span> Update Tool
+        </button>
       </div>
-    </section>
+    </header>
 
-    <!-- 2.5 QUICK ACTION STRIP (LIÊN THÔNG MCP, EAGLE DAM VÀ CONTENT) -->
-    <section class="quick-action-strip">
-      <button id="btnOpenProfileModalQuick" class="qa-btn" title="Thêm, xóa hoặc chuyển đổi các tài khoản/profile Google Photos">
-        <span>📁</span> Quản Lý Profile Photos
-      </button>
-      <button id="btnReorganizeEagle" class="qa-btn qa-primary" title="Tái cấu trúc Eagle thành đúng 2 nhánh: Kho Hình Ảnh vs Kho Video Clips">
-        <span>⚡</span> Tái Cấu Trúc Eagle 2 Nhánh
-      </button>
-      <button id="btnEnrichEagle" class="qa-btn" title="Phân tích và bổ sung Hook 3s Viral, ASMR, tag chuyên môn vào Eagle">
-        <span>🌿</span> Rót Trí Tuệ Marketing
-      </button>
-      <button id="btnFilterBurst" class="qa-btn" title="Chấm điểm độ nét Laplacian lọc ảnh Hero 5 sao">
-        <span>📸</span> Lọc Ảnh 5⭐ Hero
-      </button>
-      <button id="btnViewAlbumsQuick" class="qa-btn" title="Xem danh sách và thống kê 98 Album khách hàng">
-        <span>📁</span> Thống Kê Album (<strong id="qaAlbumCount">98</strong>)
-      </button>
-      <button id="btnOpenEagleDirect" class="qa-btn qa-accent" title="Mở thư mục Eagle test.library">
-        <span>📂</span> Mở Eagle DAM
-      </button>
-      <button id="btnMcpDetails" class="qa-btn qa-outline" title="Chi tiết các MCP Tools và hướng dẫn kết nối">
-        <span>🔌</span> MCP Hub (47 Tools)
-      </button>
-    </section>
+    <!-- MAIN CONTENT: 3 FOCUSED SECTIONS -->
+    <main class="main-container">
 
-    <!-- 3. WORKFLOW MANAGEMENT: PHOTO STUDIO, VIDEO REELS & ALBUMS -->
-    <section class="workflow-section">
-      <div class="workflow-header-row">
-        <div class="workflow-segmented-control" role="tablist">
-          <button id="tabPhotoWorkflow" class="workflow-tab active" role="tab" aria-selected="true" data-mode="photo">
-            <span class="workflow-tab-icon">📸</span>
-            <div class="workflow-tab-text">
-              <strong class="workflow-tab-title">Nghiệp Vụ Hình Ảnh</strong>
-              <span class="workflow-tab-desc">Lọc Hero 5⭐ · Cặp Trước/Sau (Before-After) · Case Studies</span>
+      <!-- SECTION 1: GOOGLE PHOTOS PROFILE MANAGEMENT -->
+      <section class="panel">
+        <div class="panel-header">
+          <div class="panel-title-wrap">
+            <span class="step-badge">1</span>
+            <div>
+              <h2 class="panel-title">Profile Google Photos</h2>
+              <p class="panel-desc" id="activeAccountMeta">Đang kiểm tra tài khoản...</p>
             </div>
-            <span class="workflow-tab-count" id="badgePhotoCount">629</span>
-          </button>
-          <button id="tabVideoWorkflow" class="workflow-tab" role="tab" aria-selected="false" data-mode="video">
-            <span class="workflow-tab-icon">🎬</span>
-            <div class="workflow-tab-text">
-              <strong class="workflow-tab-title">Nghiệp Vụ Video & Reels</strong>
-              <span class="workflow-tab-desc">Tua Nhanh 5s · Bóc Phụ Đề Whisper · Hook 3s Viral · CapCut</span>
-            </div>
-            <span class="workflow-tab-count" id="badgeVideoCount">507</span>
-          </button>
-          <button id="tabAlbumWorkflow" class="workflow-tab" role="tab" aria-selected="false" data-mode="album">
-            <span class="workflow-tab-icon">📁</span>
-            <div class="workflow-tab-text">
-              <strong class="workflow-tab-title">Thống Kê Album Khách Hàng</strong>
-              <span class="workflow-tab-desc">Danh Sách 98 Album · Thống Kê Ảnh · Link Mở Photos</span>
-            </div>
-            <span class="workflow-tab-count" id="badgeAlbumCount">98</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- WORKSPACE 1: PHOTO WORKFLOW -->
-      <div id="photoWorkspace" class="workflow-workspace">
-        <!-- Sub-Toolbar & Filter Chips -->
-        <div class="sub-toolbar">
-          <div class="filter-chips-scroll" id="photoFilterChips">
-            <button class="filter-chip active" data-filter="all">🌟 Tất cả ảnh</button>
-            <button class="filter-chip" data-filter="hero">⭐ 5 Sao Hero</button>
-            <button class="filter-chip" data-filter="before_after">🔄 Cặp Before/After</button>
-            <button class="filter-chip" data-filter="ktv">💆‍♀️ Thao tác KTV chuẩn</button>
-            <button class="filter-chip" data-filter="facility">🏥 Cơ sở & Công nghệ</button>
-            <button class="filter-chip" data-filter="before">🔵 Trước điều trị</button>
-            <button class="filter-chip" data-filter="after">🟢 Sau phục hồi</button>
           </div>
-          <div class="sub-toolbar-controls">
-            <select id="photoCustomerFilter" class="toolbar-select">
-              <option value="">👤 Tất cả khách hàng (107 hồ sơ)</option>
-            </select>
-            <input type="text" id="photoSearchInput" class="toolbar-search" placeholder="🔍 Tìm kiếm ảnh, tag, KH...">
-          </div>
-        </div>
-
-        <!-- Photo Grid Header Meta -->
-        <div class="grid-header-meta">
-          <span id="photoGridCount">Đang tải kho ảnh tư liệu...</span>
-          <div class="meta-legend">
-            <span><span class="legend-dot dot-before"></span> Trước điều trị</span>
-            <span><span class="legend-dot dot-inprocess"></span> Đang làm</span>
-            <span><span class="legend-dot dot-after"></span> Sau phục hồi</span>
-          </div>
-        </div>
-
-        <!-- Photo Grid Container -->
-        <div id="photoGrid" class="asset-grid">
-          <!-- Dynamically populated by app.js -->
-        </div>
-
-        <div class="grid-footer">
-          <button id="btnLoadMorePhotos" class="macos-btn macos-btn-secondary">Tải thêm ảnh tư liệu ⬇</button>
-        </div>
-      </div>
-
-      <!-- WORKSPACE 2: VIDEO WORKFLOW -->
-      <div id="videoWorkspace" class="workflow-workspace" style="display:none;">
-        <!-- Sub-Toolbar & Filter Chips -->
-        <div class="sub-toolbar">
-          <div class="filter-chips-scroll" id="videoFilterChips">
-            <button class="filter-chip active" data-filter="all">🎬 Tất cả video studio</button>
-            <button class="filter-chip" data-filter="speech">🗣️ Có phụ đề Whisper</button>
-            <button class="filter-chip" data-filter="asmr">🎧 Âm thanh ASMR (>4.5kHz)</button>
-            <button class="filter-chip" data-filter="hook">🔥 Hook 3s Giữ Chân</button>
-            <button class="filter-chip" data-filter="hero">⭐ 5 Sao Hero Reels</button>
-            <button class="filter-chip" data-filter="mute">🔇 Câm (Cần BGM)</button>
-          </div>
-          <div class="sub-toolbar-controls">
-            <input type="text" id="videoSearchInput" class="toolbar-search" placeholder="🔍 Tìm clip, kịch bản, âm thanh...">
-          </div>
-        </div>
-
-        <!-- Video Grid Header Meta -->
-        <div class="grid-header-meta">
-          <span id="videoGridCount">Đang tải video studio...</span>
-          <div class="meta-legend">
-            <span class="badge-pill-inline badge-speech">🗣️ Lời thoại</span>
-            <span class="badge-pill-inline badge-asmr">🎧 ASMR</span>
-            <span class="badge-pill-inline badge-music">🎵 BGM</span>
-            <span class="badge-pill-inline badge-mute">🔇 Câm</span>
-          </div>
-        </div>
-
-        <!-- Video Grid Container -->
-        <div id="videoGrid" class="asset-grid">
-          <!-- Dynamically populated by app.js -->
-        </div>
-
-        <div class="grid-footer">
-          <button id="btnLoadMoreVideos" class="macos-btn macos-btn-secondary">Tải thêm video ⬇</button>
-        </div>
-      </div>
-
-      <!-- WORKSPACE 3: ALBUM EXPLORER & STATS -->
-      <div id="albumWorkspace" class="workflow-workspace" style="display:none;">
-        <div class="sub-toolbar" style="padding:14px 18px;background:rgba(0,0,0,0.3);border-radius:12px;border:1px solid rgba(255,255,255,0.09);margin-bottom:16px;">
-          <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
-            <div style="display:flex;align-items:center;gap:10px;">
-              <span style="font-size:24px;">📁</span>
-              <div>
-                <strong style="color:#ffffff;font-size:14px;">Thống Kê Toàn Bộ Album Google Photos:</strong>
-                <span id="albumStatsSummary" style="font-size:12px;color:var(--text-secondary);display:block;margin-top:2px;">
-                  Tổng số: <strong id="albumStatsTotal" style="color:#38bdf8;font-weight:700;">98</strong> Album Khách Hàng · <strong id="albumStatsItems" style="color:#4ade80;font-weight:700;">2.450+</strong> Tư Liệu
-                </span>
-              </div>
-            </div>
-            <button id="btnRefreshAlbums" class="macos-btn-outline-sm" style="display:inline-flex;align-items:center;gap:6px;" title="Rà soát và quét lại toàn bộ album trên Google Photos">
-              <span>🔄</span> Quét Lại Album Photos
+          <div class="panel-actions">
+            <button id="btnOpenPhotosChrome" class="btn btn-info" title="Mở trình duyệt Chrome để đăng nhập Google Photos cho profile này">
+              🌐 Mở Đăng Nhập
+            </button>
+            <button id="btnScanPhotosProfile" class="btn btn-secondary" title="Quét lại số lượng ảnh, video và album của profile đang chọn">
+              🔄 Quét Photos & Album
             </button>
           </div>
-          <div class="sub-toolbar-controls">
-            <input type="text" id="albumSearchInput" class="toolbar-search" placeholder="🔍 Tìm kiếm album theo tên khách, SĐT..." style="min-width:280px;">
+        </div>
+
+        <!-- Quick Selector & Add Profile Form -->
+        <div class="profile-toolbar">
+          <div class="field-group" style="flex: 1; min-width: 220px;">
+            <label for="photoProfileSelect" class="field-label">Profile đang sử dụng</label>
+            <select id="photoProfileSelect" class="select-input"></select>
+          </div>
+
+          <div class="field-group" style="flex: 1.4; min-width: 260px;">
+            <label for="newProfileNameInput" class="field-label">Thêm Profile mới</label>
+            <div class="inline-form">
+              <input type="text" id="newProfileNameInput" class="text-input" placeholder="Nhập tên profile (VD: Spa Chi Nhánh 2...)">
+              <button id="btnCreateProfile" class="btn btn-primary">➕ Thêm</button>
+            </div>
           </div>
         </div>
 
-        <!-- Album Cards Grid -->
-        <div id="albumGrid" class="album-grid" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(290px, 1fr));gap:16px;">
-          <!-- Loaded dynamically by app.js -->
+        <!-- Profile List Table -->
+        <div class="profile-list" id="profileListContainer">
+          <!-- Populated dynamically by app.js -->
         </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- 4. macOS VIDEO INSPECTOR DRAWER (SLIDE-OUT INTEL PANE) -->
-    <div id="videoDrawerBackdrop" class="drawer-backdrop" style="display:none;"></div>
-    <aside id="videoInspectorDrawer" class="inspector-drawer" style="display:none;">
-      <div class="drawer-header">
-        <div class="drawer-header-info">
-          <h3 id="drawerVideoTitle" class="drawer-title">Phân tích Video Studio</h3>
-          <div class="drawer-badges-row">
-            <span id="drawerBadgeRatio" class="drawer-pill pill-ratio">📐 9:16 Vertical TikTok</span>
-            <span id="drawerBadgeDuration" class="drawer-pill pill-duration">⏱️ 00:15</span>
-            <span id="drawerBadgeAudio" class="drawer-pill pill-audio">🎧 ASMR Spa</span>
-            <span id="drawerBadgeStars" class="drawer-pill pill-stars">⭐⭐⭐⭐⭐</span>
+      <!-- SECTION 2: EAGLE LIBRARY -->
+      <section class="panel">
+        <div class="panel-header">
+          <div class="panel-title-wrap">
+            <span class="step-badge step-eagle">2</span>
+            <div>
+              <h2 class="panel-title">Thư Viện Eagle DAM</h2>
+              <p class="panel-desc" id="eaglePathMeta">Đang kiểm tra kết nối Eagle...</p>
+            </div>
+          </div>
+          <div class="panel-actions">
+            <span id="eagleConnBadge" class="status-badge">⏳ Đang kiểm tra</span>
+            <button id="btnOpenEagleDirect" class="btn btn-primary" title="Mở thư mục thư viện Eagle đang chọn">
+              📂 Mở Eagle DAM
+            </button>
+            <button id="btnRefreshEagle" class="btn btn-secondary" title="Làm mới số liệu từ ứng dụng Eagle">
+              🔄 Cập Nhật Eagle
+            </button>
           </div>
         </div>
-        <button id="btnCloseDrawerBtn" class="drawer-close-pill">✕ Đóng</button>
-      </div>
 
-      <div class="drawer-body">
-        <!-- Section 1: 5s / 10s Timeline Scrubber Strip -->
-        <section class="drawer-section">
-          <div class="section-title-row">
-            <h4 class="section-heading">
-              <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              Tua Nhanh 5 Giây / Cảnh (Keyframe Timeline Scrubbing)
-            </h4>
-            <span class="section-subtext">Nắm bắt toàn bộ clip trong 3 giây</span>
+        <div class="eagle-toolbar">
+          <div class="field-group" style="flex: 1;">
+            <label for="eagleLibrarySelect" class="field-label">Chọn Thư Viện Eagle (Library)</label>
+            <select id="eagleLibrarySelect" class="select-input">
+              <option value="">Đang tải danh sách thư viện Eagle...</option>
+            </select>
           </div>
-          <div id="drawerTimelineScrub" class="timeline-scrub-strip">
-            <!-- Timeline interval cards loaded dynamically -->
-          </div>
-        </section>
+        </div>
+      </section>
 
-        <!-- Section 2: Faster-Whisper Speech & Audio Analysis -->
-        <section class="drawer-section">
-          <div class="section-title-row">
-            <h4 class="section-heading">
-              <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-              Bóc Lời Thoại & Phụ Đề AI (Faster-Whisper)
-            </h4>
-            <button id="btnCopyTranscript" class="macos-btn-outline-sm">📋 Copy Lời Thoại</button>
+      <!-- SECTION 3: STATISTICS (GOOGLE PHOTOS & EAGLE DAM) -->
+      <section class="stats-grid">
+        <!-- Card Left: Google Photos Stats -->
+        <div class="panel stats-panel">
+          <div class="stats-panel-head">
+            <h3 class="stats-panel-title">📸 Thống Kê Profile Google Photos</h3>
+            <span class="stats-tag" id="statsProfileName">khaihoanskincare</span>
           </div>
-          <div id="drawerWhisperBox" class="whisper-transcript-box">
-            <!-- Speech transcripts loaded dynamically -->
+          <div class="metrics-row">
+            <div class="metric-box">
+              <span class="metric-label">Ảnh tĩnh</span>
+              <strong class="metric-val" id="statPhotosCount">0</strong>
+            </div>
+            <div class="metric-box">
+              <span class="metric-label">Video clip</span>
+              <strong class="metric-val" id="statVideosCount">0</strong>
+            </div>
+            <div class="metric-box metric-clickable" id="btnOpenAlbumsModal" title="Bấm để xem danh sách chi tiết toàn bộ Album">
+              <span class="metric-label">Số Album</span>
+              <strong class="metric-val metric-accent" id="statAlbumsCount">0</strong>
+              <span class="metric-sub">Xem danh sách ➔</span>
+            </div>
           </div>
-        </section>
+        </div>
 
-        <!-- Section 3: CapCut Golden Moment 3s Hook Box -->
-        <section class="drawer-section">
-          <div class="section-title-row">
-            <h4 class="section-heading">
-              <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-              Khúc Hay Nhất (Golden Moment) & Chỉ Dẫn Dựng CapCut
-            </h4>
-            <button id="btnCopyCapCutRecipe" class="macos-btn-primary-sm">📋 Copy Chỉ Dẫn CapCut</button>
+        <!-- Card Right: Eagle DAM Stats -->
+        <div class="panel stats-panel">
+          <div class="stats-panel-head">
+            <h3 class="stats-panel-title">🦅 Thống Kê Thư Viện Eagle</h3>
+            <span class="stats-tag" id="statsEagleName">test.library</span>
           </div>
-          <div id="drawerCapCutBox" class="capcut-recipe-card">
-            <!-- Instructions and hook loaded dynamically -->
+          <div class="metrics-row metrics-row-4">
+            <div class="metric-box">
+              <span class="metric-label">Tổng tư liệu</span>
+              <strong class="metric-val" id="statEagleTotal">0</strong>
+            </div>
+            <div class="metric-box">
+              <span class="metric-label">Kho Hình Ảnh</span>
+              <strong class="metric-val" id="statEaglePhotos">0</strong>
+            </div>
+            <div class="metric-box">
+              <span class="metric-label">Kho Video</span>
+              <strong class="metric-val" id="statEagleVideos">0</strong>
+            </div>
+            <div class="metric-box">
+              <span class="metric-label">Thư mục</span>
+              <strong class="metric-val" id="statEagleFolders">0</strong>
+            </div>
           </div>
-        </section>
-      </div>
-    </aside>
+        </div>
+      </section>
 
-    <!-- 5. INTERACTIVE BEFORE / AFTER COMPARISON MODAL -->
-    <div id="beforeAfterModalBackdrop" class="drawer-backdrop" style="display:none;"></div>
-    <div id="beforeAfterModal" class="comparison-modal" style="display:none;">
-      <div class="comparison-header">
+    </main>
+
+    <!-- MODAL 1: ALBUMS LIST -->
+    <div id="albumsModalBackdrop" class="modal-backdrop" style="display:none;"></div>
+    <div id="albumsModal" class="modal-box" style="display:none;">
+      <div class="modal-header">
         <div>
-          <h3 class="drawer-title" id="baCustomerName">Hồ sơ ca điều trị: Thu Lee</h3>
-          <span class="drawer-subtext" style="font-size:12px;color:var(--text-muted);">Đối chiếu kết quả Trước ➔ Sau liệu trình phục hồi da chuyên sâu</span>
+          <h3 class="modal-title">📁 Danh Sách Album Google Photos</h3>
+          <span class="modal-subtitle" id="albumsModalSummary">0 album</span>
         </div>
-        <button id="btnCloseBAModal" class="drawer-close-pill">✕ Đóng</button>
+        <button id="btnCloseAlbumsModal" class="btn-close">✕ Đóng</button>
       </div>
-      <div class="comparison-body" id="baComparisonBody">
-        <!-- Side by side comparison cards loaded dynamically -->
+      <div class="modal-body">
+        <div class="modal-toolbar">
+          <input type="text" id="albumSearchInput" class="text-input" placeholder="🔍 Tìm album theo tên khách hàng, SĐT..." style="flex:1;">
+          <button id="btnRescanAlbums" class="btn btn-secondary">🔄 Quét lại Album</button>
+        </div>
+        <div id="albumsListContainer" class="albums-list"></div>
       </div>
     </div>
 
-    <!-- 6. MCP HUB MODAL (LIÊN THÔNG MCP BRIDGE & ANTIGRAVITY AI) -->
-    <div id="mcpModalBackdrop" class="drawer-backdrop" style="display:none;"></div>
-    <div id="mcpHubModal" class="comparison-modal" style="display:none; max-width:880px;">
-      <div class="comparison-header">
-        <div style="display:flex;align-items:center;gap:12px;">
-          <span style="font-size:24px;">🔌</span>
-          <div>
-            <h3 class="drawer-title">MCP Bridge Gateway · Streamable HTTP & stdio</h3>
-            <span class="drawer-subtext" style="font-size:12px;color:var(--text-muted);">Liên thông 2 chiều giữa Antigravity AI, Eagle DAM và Web Dashboard</span>
-          </div>
+    <!-- MODAL 2: MCP HUB -->
+    <div id="mcpModalBackdrop" class="modal-backdrop" style="display:none;"></div>
+    <div id="mcpHubModal" class="modal-box" style="display:none;">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">🔌 Cổng Kết Nối MCP Gateway</h3>
+          <span class="modal-subtitle">Endpoint chuẩn cho Antigravity AI / Cursor / Claude</span>
         </div>
-        <button id="btnCloseMcpModal" class="drawer-close-pill">✕ Đóng</button>
+        <button id="btnCloseMcpModal" class="btn-close">✕ Đóng</button>
       </div>
-      <div class="comparison-body" style="padding:20px; display:flex; flex-direction:column; gap:18px;">
-        <!-- Connection Info Banner -->
-        <div class="mcp-info-banner">
-          <div class="mcp-banner-item">
-            <span class="mcp-b-label">HTTP MCP Endpoint:</span>
+      <div class="modal-body">
+        <div class="mcp-banner">
+          <div>
+            <div class="field-label">HTTP MCP Endpoint</div>
             <code class="mcp-code">http://127.0.0.1:8898/mcp</code>
           </div>
-          <div class="mcp-banner-item">
-            <span class="mcp-b-label">Trạng thái kết nối:</span>
-            <span class="badge-pill-inline badge-speech" style="background:rgba(34,197,94,0.15);color:#22c55e;">🟢 Sẵn Sàng (39 Tools)</span>
-          </div>
-          <div class="mcp-banner-item">
-            <span class="mcp-b-label">Ngành nghề đang kích hoạt:</span>
-            <strong id="mcpActiveDomainName" style="color:var(--theme-accent, #38bdf8);">🌿 Spa & Chăm Sóc Da</strong>
-          </div>
-          <button id="btnCopyMcpConfig" class="macos-btn-outline-sm" style="align-self:flex-start; margin-top:4px;">📋 Sao Chép JSON Cấu Hình MCP</button>
+          <button id="btnCopyMcpConfig" class="btn btn-primary">📋 Sao chép JSON MCP</button>
         </div>
-
-        <!-- Search Tools -->
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-          <h4 style="margin:0; font-size:14px; font-weight:700; color:#ffffff;">Danh mục 39 Công Cụ MCP (Tools) AI Agent sử dụng:</h4>
-          <input type="text" id="mcpToolSearchInput" class="toolbar-search" placeholder="🔍 Lọc tool theo tên hoặc chức năng..." style="max-width:280px;">
-        </div>
-
-        <!-- Tools Grid -->
-        <div id="mcpToolsGrid" class="mcp-tools-grid" style="max-height:360px; overflow-y:auto;">
-          <!-- Loaded dynamically by app.js -->
-        </div>
+        <input type="text" id="mcpToolSearchInput" class="text-input" placeholder="🔍 Tìm kiếm công cụ MCP..." style="width:100%;margin-bottom:12px;">
+        <div id="mcpToolsList" class="mcp-tools-list"></div>
       </div>
     </div>
 
-    <!-- 7. PROFILE MANAGEMENT MODAL -->
-    <div id="profileModalBackdrop" class="drawer-backdrop" style="display:none;"></div>
-    <div id="profileModal" class="comparison-modal" style="display:none; max-width:640px;">
-      <div class="comparison-header">
-        <div style="display:flex;align-items:center;gap:12px;">
-          <span style="font-size:24px;">📁</span>
-          <div>
-            <h3 class="drawer-title">Quản Lý Profile Google Photos</h3>
-            <span class="drawer-subtext" style="font-size:12px;color:var(--text-muted);">Thêm kho ảnh mới, chuyển đổi hoặc xóa các profile không dùng</span>
-          </div>
-        </div>
-        <button id="btnCloseProfileModal" class="drawer-close-pill">✕ Đóng</button>
-      </div>
-      <div class="comparison-body" style="padding:20px; display:flex; flex-direction:column; gap:18px;">
-        <!-- Form thêm profile mới -->
-        <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;">
-          <h4 style="margin:0;font-size:13px;font-weight:700;color:#ffffff;">➕ Tạo Profile Google Photos Mới:</h4>
-          <div style="display:flex;gap:8px;">
-            <input type="text" id="newProfileNameInput" placeholder="Nhập tên kho (VD: Spa Chi Nhánh 2, Khách Hàng VIP...)" style="flex:1;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.18);border-radius:6px;padding:8px 12px;color:#fff;font-size:13px;">
-            <button id="btnSubmitCreateProfile" class="macos-btn macos-btn-primary" style="white-space:nowrap;">Tạo Profile</button>
-          </div>
-        </div>
+    <!-- TOAST MESSAGE -->
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-        <!-- Danh sách profile hiện có -->
-        <div>
-          <h4 style="margin:0 0 10px 0;font-size:13px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;">Danh Sách Profile Hiện Có:</h4>
-          <div id="profileListContainer" style="display:flex;flex-direction:column;gap:8px;max-height:280px;overflow-y:auto;">
-            <!-- Populated dynamically by app.js -->
-          </div>
-        </div>
-      </div>
-    </div>
+  </div>
 
-    <!-- ALERT TOAST -->
-    <div id="message" role="status" aria-live="polite"></div>
-
-  </main>
-
-</div>
-
-<script src="/app.js?v=20261117-dual"></script>
+  <script src="/app.js?v=20261121-minimal"></script>
 </body>
 </html>
