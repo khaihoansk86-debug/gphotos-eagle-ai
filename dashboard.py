@@ -379,15 +379,12 @@ def routes(catalog):
             command=request.path_params['command']
             if command=='profile-create':
                 name=data.get('name','').strip()
-                if not name or len(name)>100:
-                    raise ValueError('Tên kho từ 1–100 ký tự')
-                profile_id=uuid.uuid4().hex
-                with catalog.store.connect(True) as db:
-                    db.execute('INSERT INTO profiles VALUES(?,?,?)',(profile_id,name,str(catalog.store.root/'profiles'/profile_id)))
-                result={'profile_id':profile_id}
-                catalog.select_photo_profile(profile_id)
+                result=await asyncio.to_thread(catalog.create_photo_profile, name)
             elif command=='profile-select':
                 result=catalog.select_photo_profile(data['profile_id'])
+            elif command=='profile-delete':
+                pid=(data.get('profile_id') or '').strip()
+                result=await asyncio.to_thread(catalog.delete_photo_profile, pid)
             elif command=='photos-scan':
                 result=catalog.start_photo_scan(data['profile_id'],data.get('max_steps',300))
             elif command=='photos-stop':

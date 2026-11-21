@@ -602,6 +602,27 @@ async function refresh() {
     token = state.token;
     if (state.selected_profile) currentProfile = state.selected_profile;
 
+    // 0. Populate Google Photos Profile Selector
+    const profileSel = $('photoProfileSelect');
+    if (profileSel && Array.isArray(state.profiles)) {
+      const sig = state.profiles.map(p => `${p.id}:${p.name}`).join('|');
+      if (profileSel.dataset.sig !== sig) {
+        profileSel.innerHTML = state.profiles.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+        profileSel.dataset.sig = sig;
+      }
+      if (state.profiles.some(p => p.id === currentProfile)) {
+        profileSel.value = currentProfile;
+      } else if (state.profiles.length) {
+        currentProfile = state.profiles[0].id;
+        profileSel.value = currentProfile;
+      }
+      if ($('btnDeletePhotoProfile')) {
+        $('btnDeletePhotoProfile').disabled = state.profiles.length <= 1;
+        $('btnDeletePhotoProfile').style.opacity = state.profiles.length <= 1 ? '0.45' : '1';
+      }
+      renderProfileModalList(state.profiles, currentProfile);
+    }
+
     // 1. Titlebar Connection Pills
     if ($('eagleStatus')) {
       $('eagleStatus').innerHTML = state.eagle_connected 
@@ -990,6 +1011,148 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
   });
 
+  // 17.5 Google Photos Profile Switch / Add / Delete
+  if ($('photoProfileSelect')) {
+    $('photoProfileSelect').onchange = async e => {
+      try {
+        await api('profile-select', { profile_id: e.target.value });
+        currentProfile = e.target.value;
+        message('Đã chuyển profile Google Photos!');
+        refresh();
+      } catch (err) {
+        message(err.message || 'Lỗi chuyển profile', true);
+      }
+    };
+  }
+  if ($('btnAddPhotoProfile')) {
+    $('btnAddPhotoProfile').onclick = () => {
+      openProfileModal();
+    };
+  }
+  if ($('btnDeletePhotoProfile')) {
+    $('btnDeletePhotoProfile').onclick = async () => {
+      const sel = $('photoProfileSelect');
+      const pid = sel?.value || currentProfile;
+      const label = sel?.options?.[sel.selectedIndex]?.text || pid;
+      deleteProfileDirect(pid, label);
+    };
+  }
+  if ($('btnOpenPhotosChrome')) {
+    $('btnOpenPhotosChrome').onclick = () => {
+      openPhotosLoginDirect(currentProfile);
+    };
+  }
+
+  // Profile Modal Controls
+  const btnOpenProf = $('btnOpenProfileModal');
+  const btnOpenProfQuick = $('btnOpenProfileModalQuick');
+  const btnCloseProf = $('btnCloseProfileModal');
+  const backdropProf = $('profileModalBackdrop');
+  if (btnOpenProf) btnOpenProf.onclick = openProfileModal;
+  if (btnOpenProfQuick) btnOpenProfQuick.onclick = openProfileModal;
+  if (btnCloseProf) btnCloseProf.onclick = closeProfileModal;
+  if (backdropProf) backdropProf.onclick = closeProfileModal;
+
+  const btnSubCreate = $('btnSubmitCreateProfile');
+  const inputNewProf = $('newProfileNameInput');
+  if (btnSubCreate && inputNewProf) {
+    const doCreate = async () => {
+      const name = inputNewProf.value.trim();
+      if (!name) {
+        message('Vui lòng nhập tên profile', true);
+        return;
+      }
+      try {
+        const res = await api('profile-create', { name });
+        if (res.profile_id) currentProfile = res.profile_id;
+        inputNewProf.value = '';
+        message(`✅ Đã tạo thành công profile "${name}"!`);
+        refresh();
+      } catch (err) {
+        message(err.message || 'Lỗi tạo profile', true);
+      }
+    };
+    btnSubCreate.onclick = doCreate;
+    inputNewProf.onkeydown = e => { if (e.key === 'Enter') doCreate(); };
+  }
+
   // 18. Polling loop every 8 seconds
   setInterval(refresh, 8000);
 });
+
+// -------------------------------------------------------------
+// Google Photos Profile Modal Helpers
+// -------------------------------------------------------------
+function renderProfileModalList(profiles, currentPid) {
+  const container = $('profileListContainer');
+  if (!container || !Array.isArray(profiles)) return;
+  container.innerHTML = profiles.map(p => {
+    const isActive = p.id === currentPid;
+    return `
+      <div class="profile-item-row ${isActive ? 'active' : ''}">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:18px;">${isActive ? '🟢' : '📁'}</span>
+          <div>
+            <strong style="color:#ffffff;font-size:13px;">${p.name}</strong>
+            ${isActive ? '<span style="margin-left:6px;font-size:10px;padding:2px 6px;background:rgba(34,197,94,0.2);color:#4ade80;border-radius:10px;font-weight:700;">Đang Chọn</span>' : ''}
+            <div style="font-size:11px;color:var(--text-muted);font-family:monospace;">ID: ${p.id.substring(0, 16)}...</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          ${!isActive ? `<button class="macos-btn-outline-sm" onclick="switchProfileDirect('${p.id}')">Chọn</button>` : ''}
+          <button class="macos-btn-outline-sm" title="Mở Google Photos để đăng nhập" onclick="openPhotosLoginDirect('${p.id}')">🌐 Mở</button>
+          <button class="btn-profile-pill btn-profile-del" title="Xóa profile này" ${profiles.length <= 1 ? 'disabled style="opacity:0.35;"' : ''} onclick="deleteProfileDirect('${p.id}', '${p.name.replace(/'/g, "\\'")}')">🗑️ Xóa</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function openProfileModal() {
+  const modal = $('profileModal');
+  const backdrop = $('profileModalBackdrop');
+  if (!modal || !backdrop) return;
+  modal.style.display = 'block';
+  backdrop.style.display = 'block';
+  setTimeout(() => $('newProfileNameInput')?.focus(), 100);
+}
+
+function closeProfileModal() {
+  const modal = $('profileModal');
+  const backdrop = $('profileModalBackdrop');
+  if (modal) modal.style.display = 'none';
+  if (backdrop) backdrop.style.display = 'none';
+}
+
+window.switchProfileDirect = async function(pid) {
+  try {
+    await api('profile-select', { profile_id: pid });
+    currentProfile = pid;
+    message('✅ Đã chuyển sang profile: ' + pid);
+    refresh();
+  } catch (err) {
+    message(err.message || 'Lỗi chuyển profile', true);
+  }
+};
+
+window.openPhotosLoginDirect = async function(pid) {
+  message('🌐 Đang mở trình duyệt Google Photos cho profile...');
+  try {
+    await api('open-chrome', { profile_id: pid });
+    message('✅ Đã mở Chrome với tài khoản Google Photos!');
+  } catch (err) {
+    message(err.message || 'Lỗi mở trình duyệt', true);
+  }
+};
+
+window.deleteProfileDirect = async function(pid, label) {
+  if (!confirm(`Bạn có chắc chắn muốn xóa profile "${label}" không?`)) return;
+  try {
+    const res = await api('profile-delete', { profile_id: pid });
+    if (res.selected_profile) currentProfile = res.selected_profile;
+    message(`✅ Đã xóa profile "${label}"!`);
+    refresh();
+  } catch (err) {
+    message(err.message || 'Không thể xóa profile', true);
+  }
+};

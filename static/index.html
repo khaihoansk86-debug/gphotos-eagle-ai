@@ -101,11 +101,21 @@
     <!-- 2. EXECUTIVE STATUS STRIP (ĐỒNG BỘ THÔNG TIN TỰ ĐỘNG QUA ANTIGRAVITY AI) -->
     <section class="executive-status-strip">
       <div class="status-chip-group">
-        <span class="status-info-chip">
+        <div class="status-info-chip profile-control-chip" style="gap:8px;">
           <span class="status-dot-pulse"></span>
-          <span class="chip-label">Google Photos:</span>
-          <strong id="hubAccountDisplay" class="chip-val">Le Khanh (khaihoansk86@gmail.com)</strong>
-        </span>
+          <span class="chip-label">Kho Google Photos:</span>
+          <select id="photoProfileSelect" class="profile-dropdown-select" title="Chọn profile Google Photos"></select>
+          <button id="btnAddPhotoProfile" type="button" class="btn-profile-pill btn-profile-add" title="Thêm profile Google Photos mới">
+            <span>➕</span> Thêm Profile
+          </button>
+          <button id="btnDeletePhotoProfile" type="button" class="btn-profile-pill btn-profile-del" title="Xóa profile Google Photos đang chọn">
+            <span>🗑️</span> Xóa Profile
+          </button>
+          <button id="btnOpenPhotosChrome" type="button" class="btn-profile-pill btn-profile-login" title="Mở trình duyệt Google Photos để đăng nhập kho này">
+            <span>🌐</span> Mở Đăng Nhập
+          </button>
+          <strong id="hubAccountDisplay" class="chip-val" style="opacity:0.85; margin-left:4px;"></strong>
+        </div>
         <span class="status-info-chip">
           <span class="status-dot-pulse"></span>
           <span class="chip-label">Eagle DAM:</span>
@@ -117,9 +127,13 @@
         </span>
       </div>
       <div style="display:flex;align-items:center;gap:10px;margin-left:auto;">
+        <button id="btnOpenProfileModal" class="mcp-hub-pill-btn" style="background:rgba(56,189,248,0.12); border-color:rgba(56,189,248,0.35); color:#38bdf8;" title="Mở danh sách quản lý Profile Google Photos">
+          <span>📁</span>
+          <span class="mcp-hub-label">Quản Lý Profile</span>
+        </button>
         <button id="btnOpenMcpHub" class="mcp-hub-pill-btn" title="Xem liên thông MCP Bridge với Antigravity AI">
           <span class="status-dot-pulse" style="background:#22c55e;"></span>
-          <span class="mcp-hub-label">MCP: 8898 (39 Tools)</span>
+          <span class="mcp-hub-label">MCP: 8898 (47 Tools)</span>
         </button>
         <div class="status-info-chip chip-ai">
           <span class="chip-label">Điều phối:</span>
@@ -130,6 +144,9 @@
 
     <!-- 2.5 QUICK ACTION STRIP (LIÊN THÔNG MCP, EAGLE DAM VÀ CONTENT) -->
     <section class="quick-action-strip">
+      <button id="btnOpenProfileModalQuick" class="qa-btn" title="Thêm, xóa hoặc chuyển đổi các tài khoản/profile Google Photos">
+        <span>📁</span> Quản Lý Profile Photos
+      </button>
       <button id="btnReorganizeEagle" class="qa-btn qa-primary" title="Tái cấu trúc Eagle thành đúng 2 nhánh: Kho Hình Ảnh vs Kho Video Clips">
         <span>⚡</span> Tái Cấu Trúc Eagle 2 Nhánh
       </button>
@@ -142,8 +159,8 @@
       <button id="btnOpenEagleDirect" class="qa-btn qa-accent" title="Mở thư mục Eagle test.library">
         <span>📂</span> Mở Eagle DAM
       </button>
-      <button id="btnMcpDetails" class="qa-btn qa-outline" title="Chi tiết 39 MCP Tools và hướng dẫn kết nối">
-        <span>🔌</span> MCP Hub (39 Tools)
+      <button id="btnMcpDetails" class="qa-btn qa-outline" title="Chi tiết các MCP Tools và hướng dẫn kết nối">
+        <span>🔌</span> MCP Hub (47 Tools)
       </button>
     </section>
 
@@ -366,6 +383,39 @@
         <!-- Tools Grid -->
         <div id="mcpToolsGrid" class="mcp-tools-grid" style="max-height:360px; overflow-y:auto;">
           <!-- Loaded dynamically by app.js -->
+        </div>
+      </div>
+    </div>
+
+    <!-- 7. PROFILE MANAGEMENT MODAL -->
+    <div id="profileModalBackdrop" class="drawer-backdrop" style="display:none;"></div>
+    <div id="profileModal" class="comparison-modal" style="display:none; max-width:640px;">
+      <div class="comparison-header">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span style="font-size:24px;">📁</span>
+          <div>
+            <h3 class="drawer-title">Quản Lý Profile Google Photos</h3>
+            <span class="drawer-subtext" style="font-size:12px;color:var(--text-muted);">Thêm kho ảnh mới, chuyển đổi hoặc xóa các profile không dùng</span>
+          </div>
+        </div>
+        <button id="btnCloseProfileModal" class="drawer-close-pill">✕ Đóng</button>
+      </div>
+      <div class="comparison-body" style="padding:20px; display:flex; flex-direction:column; gap:18px;">
+        <!-- Form thêm profile mới -->
+        <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;">
+          <h4 style="margin:0;font-size:13px;font-weight:700;color:#ffffff;">➕ Tạo Profile Google Photos Mới:</h4>
+          <div style="display:flex;gap:8px;">
+            <input type="text" id="newProfileNameInput" placeholder="Nhập tên kho (VD: Spa Chi Nhánh 2, Khách Hàng VIP...)" style="flex:1;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.18);border-radius:6px;padding:8px 12px;color:#fff;font-size:13px;">
+            <button id="btnSubmitCreateProfile" class="macos-btn macos-btn-primary" style="white-space:nowrap;">Tạo Profile</button>
+          </div>
+        </div>
+
+        <!-- Danh sách profile hiện có -->
+        <div>
+          <h4 style="margin:0 0 10px 0;font-size:13px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;">Danh Sách Profile Hiện Có:</h4>
+          <div id="profileListContainer" style="display:flex;flex-direction:column;gap:8px;max-height:280px;overflow-y:auto;">
+            <!-- Populated dynamically by app.js -->
+          </div>
         </div>
       </div>
     </div>

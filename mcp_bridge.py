@@ -33,6 +33,8 @@ DESCRIPTIONS = {
     'get_source_preview': 'List 12 recently indexed assets and their source names; not a live Google Photos album listing.',
     'list_photo_profiles': 'Read configured Google Photos profiles without credentials. Profile exists does not prove login.',
     'select_photo_profile': 'Select active Photos profile shown on Dashboard; does not link existing jobs to that profile.',
+    'create_photo_profile': 'Create a new Google Photos profile folder and register it in the system. Required argument: name (1..100 characters).',
+    'delete_photo_profile': 'Delete a registered Google Photos profile and clean up its local profile directory. Required argument: profile_id.',
     'open_photo_profile': 'Open the requested Google Photos profile/album for user login. Does not collect album media automatically.',
     'get_monitor': 'Read Dashboard overview: selected Photos profile, leased workers, Eagle results and counts.',
     'list_jobs': 'List jobs created on the Dashboard; pick the job requested by the user.',

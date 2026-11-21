@@ -143,6 +143,42 @@ class Catalog:
             db.execute('INSERT OR REPLACE INTO preferences VALUES(?,?)',('selected_profile',profile_id))
         return dict(profile)
 
+    def create_photo_profile(self, name: str) -> dict:
+        import uuid
+        name = (name or '').strip()
+        if not name or len(name) > 100:
+            raise ValueError('Tên kho từ 1–100 ký tự')
+        profile_id = uuid.uuid4().hex
+        profile_path = str(self.store.root / 'profiles' / profile_id)
+        with self.store.connect(True) as db:
+            db.execute('INSERT INTO profiles VALUES(?,?,?)', (profile_id, name, profile_path))
+            db.execute("INSERT OR REPLACE INTO preferences VALUES('selected_profile',?)", (profile_id,))
+        return {'status': 'success', 'profile_id': profile_id, 'name': name, 'path': profile_path}
+
+    def delete_photo_profile(self, profile_id: str) -> dict:
+        import shutil
+        pid = (profile_id or '').strip()
+        if not pid:
+            raise ValueError('Thiếu profile_id cần xóa')
+        with self.store.connect(True) as db:
+            rows = db.execute('SELECT id,path FROM profiles ORDER BY rowid').fetchall()
+            if len(rows) <= 1:
+                raise ValueError('Cần giữ lại ít nhất 1 profile Photos')
+            target = next((r for r in rows if r['id'] == pid), None)
+            if not target:
+                raise ValueError('Không tìm thấy profile cần xóa')
+            db.execute('DELETE FROM profiles WHERE id=?', (pid,))
+            remaining = [r['id'] for r in rows if r['id'] != pid]
+            next_id = remaining[0]
+            chosen = db.execute("SELECT value FROM preferences WHERE key='selected_profile'").fetchone()
+            if chosen and chosen['value'] == pid:
+                db.execute("INSERT OR REPLACE INTO preferences VALUES('selected_profile',?)", (next_id,))
+        managed_root = (self.store.root / 'profiles').resolve()
+        target_path = Path(target['path']).resolve()
+        if target_path.parent == managed_root and target_path.exists():
+            shutil.rmtree(target_path, ignore_errors=True)
+        return {'status': 'success', 'deleted': pid, 'selected_profile': next_id}
+
     def open_photo_profile(self, profile_id, album_url='https://photos.google.com'):
         from gphotos_extractor import GPhotosExtractor
         with self.store.connect() as db:
