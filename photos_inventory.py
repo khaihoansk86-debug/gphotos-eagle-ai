@@ -33,9 +33,12 @@ class PhotosInventory:
     def status(self, profile_id):
         with self.store.connect() as db:
             row=db.execute('SELECT * FROM photos_scans WHERE profile_id=?',(profile_id,)).fetchone()
-            if not row:return {'status':'not_scanned','counts':{},'total_verified':False}
+            al_count=db.execute('SELECT COUNT(*) FROM photos_albums WHERE profile_id=?',(profile_id,)).fetchone()
+            album_num=al_count[0] if al_count else 0
+            if not row:return {'status':'not_scanned','counts':{'albums':album_num},'total_verified':False}
             result=dict(row)
             result['counts']={r['kind']:r['n'] for r in db.execute("SELECT json_extract(body,'$.kind') kind,COUNT(*) n FROM photos_items WHERE profile_id=? AND account_key=? GROUP BY kind",(profile_id,row['account_key']))}
+            result['counts']['albums']=album_num
         if result['status']=='running' and time.time()-result['updated']>45:result['status']='interrupted'
         result['total_verified']=False
         return result

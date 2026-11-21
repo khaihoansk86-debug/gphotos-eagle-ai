@@ -76,12 +76,15 @@
       </div>
 
       <!-- Card 3: Albums -->
-      <div class="kpi-card">
+      <div class="kpi-card kpi-card-clickable" id="kpiCardAlbums" title="Bấm để xem danh sách thống kê toàn bộ Album khách hàng" style="cursor:pointer;transition:transform 0.18s ease, border-color 0.18s ease;">
         <div class="kpi-icon-wrapper kpi-icon-clients">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         </div>
         <div class="kpi-body">
-          <strong class="kpi-value" id="kpiAlbums">98</strong>
+          <div style="display:flex;align-items:baseline;gap:6px;">
+            <strong class="kpi-value" id="kpiAlbums">98</strong>
+            <span style="font-size:11px;color:#38bdf8;font-weight:600;">(Xem chi tiết ➔)</span>
+          </div>
           <span class="kpi-label">Hồ sơ album khách hàng</span>
         </div>
       </div>
@@ -156,6 +159,9 @@
       <button id="btnFilterBurst" class="qa-btn" title="Chấm điểm độ nét Laplacian lọc ảnh Hero 5 sao">
         <span>📸</span> Lọc Ảnh 5⭐ Hero
       </button>
+      <button id="btnViewAlbumsQuick" class="qa-btn" title="Xem danh sách và thống kê 98 Album khách hàng">
+        <span>📁</span> Thống Kê Album (<strong id="qaAlbumCount">98</strong>)
+      </button>
       <button id="btnOpenEagleDirect" class="qa-btn qa-accent" title="Mở thư mục Eagle test.library">
         <span>📂</span> Mở Eagle DAM
       </button>
@@ -164,7 +170,7 @@
       </button>
     </section>
 
-    <!-- 3. DUAL WORKFLOW MANAGEMENT: PHOTO STUDIO & VIDEO REELS -->
+    <!-- 3. WORKFLOW MANAGEMENT: PHOTO STUDIO, VIDEO REELS & ALBUMS -->
     <section class="workflow-section">
       <div class="workflow-header-row">
         <div class="workflow-segmented-control" role="tablist">
@@ -183,6 +189,14 @@
               <span class="workflow-tab-desc">Tua Nhanh 5s · Bóc Phụ Đề Whisper · Hook 3s Viral · CapCut</span>
             </div>
             <span class="workflow-tab-count" id="badgeVideoCount">507</span>
+          </button>
+          <button id="tabAlbumWorkflow" class="workflow-tab" role="tab" aria-selected="false" data-mode="album">
+            <span class="workflow-tab-icon">📁</span>
+            <div class="workflow-tab-text">
+              <strong class="workflow-tab-title">Thống Kê Album Khách Hàng</strong>
+              <span class="workflow-tab-desc">Danh Sách 98 Album · Thống Kê Ảnh · Link Mở Photos</span>
+            </div>
+            <span class="workflow-tab-count" id="badgeAlbumCount">98</span>
           </button>
         </div>
       </div>
@@ -263,6 +277,34 @@
 
         <div class="grid-footer">
           <button id="btnLoadMoreVideos" class="macos-btn macos-btn-secondary">Tải thêm video ⬇</button>
+        </div>
+      </div>
+
+      <!-- WORKSPACE 3: ALBUM EXPLORER & STATS -->
+      <div id="albumWorkspace" class="workflow-workspace" style="display:none;">
+        <div class="sub-toolbar" style="padding:14px 18px;background:rgba(0,0,0,0.3);border-radius:12px;border:1px solid rgba(255,255,255,0.09);margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="font-size:24px;">📁</span>
+              <div>
+                <strong style="color:#ffffff;font-size:14px;">Thống Kê Toàn Bộ Album Google Photos:</strong>
+                <span id="albumStatsSummary" style="font-size:12px;color:var(--text-secondary);display:block;margin-top:2px;">
+                  Tổng số: <strong id="albumStatsTotal" style="color:#38bdf8;font-weight:700;">98</strong> Album Khách Hàng · <strong id="albumStatsItems" style="color:#4ade80;font-weight:700;">2.450+</strong> Tư Liệu
+                </span>
+              </div>
+            </div>
+            <button id="btnRefreshAlbums" class="macos-btn-outline-sm" style="display:inline-flex;align-items:center;gap:6px;" title="Rà soát và quét lại toàn bộ album trên Google Photos">
+              <span>🔄</span> Quét Lại Album Photos
+            </button>
+          </div>
+          <div class="sub-toolbar-controls">
+            <input type="text" id="albumSearchInput" class="toolbar-search" placeholder="🔍 Tìm kiếm album theo tên khách, SĐT..." style="min-width:280px;">
+          </div>
+        </div>
+
+        <!-- Album Cards Grid -->
+        <div id="albumGrid" class="album-grid" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(290px, 1fr));gap:16px;">
+          <!-- Loaded dynamically by app.js -->
         </div>
       </div>
     </section>

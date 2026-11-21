@@ -14,6 +14,7 @@ let videoOffset = 0;
 const videoLimit = 16;
 let cachedPhotoItems = [];
 let cachedVideoItems = [];
+let cachedAlbums = [];
 let cachedCustomers = [];
 let currentInspectedVideo = null;
 
@@ -71,33 +72,34 @@ function switchWorkflow(mode) {
   activeWorkflow = mode;
   const tabPhoto = $('tabPhotoWorkflow');
   const tabVideo = $('tabVideoWorkflow');
+  const tabAlbum = $('tabAlbumWorkflow');
   const wsPhoto = $('photoWorkspace');
   const wsVideo = $('videoWorkspace');
+  const wsAlbum = $('albumWorkspace');
+
+  [tabPhoto, tabVideo, tabAlbum].forEach(t => {
+    t?.classList.remove('active');
+    t?.setAttribute('aria-selected', 'false');
+  });
+  if (wsPhoto) wsPhoto.style.display = 'none';
+  if (wsVideo) wsVideo.style.display = 'none';
+  if (wsAlbum) wsAlbum.style.display = 'none';
 
   if (mode === 'photo') {
     tabPhoto?.classList.add('active');
     tabPhoto?.setAttribute('aria-selected', 'true');
-    tabVideo?.classList.remove('active');
-    tabVideo?.setAttribute('aria-selected', 'false');
-
     if (wsPhoto) wsPhoto.style.display = 'flex';
-    if (wsVideo) wsVideo.style.display = 'none';
-
-    if (cachedPhotoItems.length === 0) {
-      loadPhotos(true);
-    }
-  } else {
+    if (cachedPhotoItems.length === 0) loadPhotos(true);
+  } else if (mode === 'video') {
     tabVideo?.classList.add('active');
     tabVideo?.setAttribute('aria-selected', 'true');
-    tabPhoto?.classList.remove('active');
-    tabPhoto?.setAttribute('aria-selected', 'false');
-
     if (wsVideo) wsVideo.style.display = 'flex';
-    if (wsPhoto) wsPhoto.style.display = 'none';
-
-    if (cachedVideoItems.length === 0) {
-      loadVideos(true);
-    }
+    if (cachedVideoItems.length === 0) loadVideos(true);
+  } else if (mode === 'album') {
+    tabAlbum?.classList.add('active');
+    tabAlbum?.setAttribute('aria-selected', 'true');
+    if (wsAlbum) wsAlbum.style.display = 'flex';
+    renderAlbums();
   }
 }
 
@@ -702,7 +704,17 @@ async function refresh() {
     // 4. Hero KPI numbers
     if ($('kpiPhotos')) $('kpiPhotos').textContent = pCount.toLocaleString('vi-VN');
     if ($('kpiVideos')) $('kpiVideos').textContent = vCount.toLocaleString('vi-VN');
-    if ($('kpiAlbums')) $('kpiAlbums').textContent = (state.albums_count || 98).toLocaleString('vi-VN');
+    const aCount = state.albums_count !== undefined ? state.albums_count : (state.albums ? state.albums.length : 98);
+    if ($('kpiAlbums')) $('kpiAlbums').textContent = aCount.toLocaleString('vi-VN');
+    if ($('badgeAlbumCount')) $('badgeAlbumCount').textContent = aCount;
+    if ($('qaAlbumCount')) $('qaAlbumCount').textContent = aCount;
+    if ($('albumStatsTotal')) $('albumStatsTotal').textContent = aCount;
+    if (state.albums) {
+      cachedAlbums = state.albums;
+      const totalItems = state.total_items_in_albums || cachedAlbums.reduce((sum, a) => sum + (a.item_count || 0), 0);
+      if ($('albumStatsItems')) $('albumStatsItems').textContent = totalItems.toLocaleString('vi-VN') + ' tư liệu';
+      if (activeWorkflow === 'album') renderAlbums();
+    }
     if ($('kpiClassified')) $('kpiClassified').textContent = (pCount + vCount).toLocaleString('vi-VN');
 
     // 5. Taxonomy Domain Sync
@@ -782,8 +794,50 @@ document.addEventListener('DOMContentLoaded', async () => {
   // 3. Workflow Segmented Control Switching
   const tabPhoto = $('tabPhotoWorkflow');
   const tabVideo = $('tabVideoWorkflow');
+  const tabAlbum = $('tabAlbumWorkflow');
   if (tabPhoto) tabPhoto.onclick = () => switchWorkflow('photo');
   if (tabVideo) tabVideo.onclick = () => switchWorkflow('video');
+  if (tabAlbum) tabAlbum.onclick = () => switchWorkflow('album');
+
+  const kpiCardAlb = $('kpiCardAlbums');
+  if (kpiCardAlb) kpiCardAlb.onclick = () => switchWorkflow('album');
+
+  const btnViewAlbQuick = $('btnViewAlbumsQuick');
+  if (btnViewAlbQuick) btnViewAlbQuick.onclick = () => switchWorkflow('album');
+
+  const btnRefAlb = $('btnRefreshAlbums');
+  if (btnRefAlb) {
+    btnRefAlb.onclick = async () => {
+      message('🔄 Đang quét lại danh sách Album từ Google Photos...');
+      try {
+        const res = await api('photos-scan-albums', { profile_id: currentProfile });
+        if (res.albums && res.albums.albums) {
+          cachedAlbums = res.albums.albums;
+          renderAlbums();
+          message(`✅ Đã rà soát xong ${cachedAlbums.length} album khách hàng!`);
+          refresh();
+        } else {
+          message('✅ Đã quét xong album!');
+          refresh();
+        }
+      } catch (err) {
+        message(err.message || 'Lỗi quét album', true);
+      }
+    };
+  }
+
+  const albSearch = $('albumSearchInput');
+  if (albSearch) {
+    albSearch.oninput = () => {
+      const q = albSearch.value.trim().toLowerCase();
+      if (!q) {
+        renderAlbums(cachedAlbums);
+      } else {
+        const filtered = cachedAlbums.filter(a => (a.title || '').toLowerCase().includes(q));
+        renderAlbums(filtered);
+      }
+    };
+  }
 
   // 4. Photo Filter Chips
   document.querySelectorAll('#photoFilterChips .filter-chip').forEach(btn => {
@@ -1154,5 +1208,70 @@ window.deleteProfileDirect = async function(pid, label) {
     refresh();
   } catch (err) {
     message(err.message || 'Không thể xóa profile', true);
+  }
+};
+
+// -------------------------------------------------------------
+// Google Photos Album Explorer & Stats Helpers
+// -------------------------------------------------------------
+function renderAlbums(albumsToRender) {
+  const grid = $('albumGrid');
+  if (!grid) return;
+  const list = albumsToRender || cachedAlbums;
+  if (!list.length) {
+    grid.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-muted);grid-column:1/-1;">Chưa có album nào được quét trong profile này. Bấm "Quét Lại Album Photos" để rà soát tự động!</div>';
+    return;
+  }
+  grid.innerHTML = list.map(al => {
+    const title = al.title || 'Album Không Tên';
+    const count = al.item_count || 0;
+    const cover = al.cover_url;
+    return `
+      <div class="album-card">
+        <div class="album-card-cover-wrap">
+          ${cover ? `<img src="${cover}" alt="${title}" class="album-card-cover" onerror="this.onerror=null;this.parentElement.innerHTML='<div class=\\'album-card-cover-fallback\\'>📁</div>';">` : `<div class="album-card-cover-fallback">📁</div>`}
+          <span class="album-card-badge">${count} tư liệu</span>
+        </div>
+        <div class="album-card-content">
+          <h4 class="album-card-title" title="${title}">${title}</h4>
+          <div class="album-card-meta">
+            <span>👤 Hồ sơ ca khách hàng</span>
+          </div>
+          <div class="album-card-actions">
+            ${al.album_url ? `<a href="${al.album_url}" target="_blank" class="macos-btn-outline-sm" style="text-decoration:none;display:inline-flex;align-items:center;gap:4px;">🌐 Mở Photos</a>` : ''}
+            <button class="btn-card-primary" style="font-size:11px;padding:4px 10px;" onclick="filterPhotosByAlbumTitle('${title.replace(/'/g, "\\'")}')">
+              🔍 Xem Ảnh
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+window.filterPhotosByAlbumTitle = function(title) {
+  switchWorkflow('photo');
+  const sel = $('photoCustomerFilter');
+  if (sel) {
+    let matched = false;
+    for (let opt of sel.options) {
+      if (opt.text.toLowerCase().includes(title.toLowerCase()) || title.toLowerCase().includes(opt.text.toLowerCase())) {
+        sel.value = opt.value;
+        matched = true;
+        break;
+      }
+    }
+    if (!matched) {
+      const searchInput = $('photoSearchInput');
+      if (searchInput) {
+        searchInput.value = title;
+        photoSearchTerm = title.toLowerCase();
+        applyPhotoFilters();
+      }
+    } else {
+      photoCustomer = sel.value;
+      applyPhotoFilters();
+    }
+    message(`🔍 Đang hiển thị ảnh của album: "${title}"`);
   }
 };

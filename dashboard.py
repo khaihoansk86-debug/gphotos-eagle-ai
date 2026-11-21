@@ -245,10 +245,14 @@ def routes(catalog):
     def snapshot():
         with catalog.store.connect() as db:
             profiles=[dict(r) for r in db.execute('SELECT id,name FROM profiles ORDER BY rowid')]
-            album_row=db.execute('SELECT COUNT(*) FROM photos_albums').fetchone()
-            albums_count=album_row[0] if album_row else 98
             chosen=db.execute("SELECT value FROM preferences WHERE key='selected_profile'").fetchone()
             selected_profile=chosen['value'] if chosen else '2e3744dd5f5e4b9ea37a4e5b6f49b98c'
+            rows=db.execute('SELECT id,title,album_url,item_count,cover_url,updated FROM photos_albums WHERE profile_id=? ORDER BY item_count DESC', (selected_profile,)).fetchall()
+            if not rows:
+                rows=db.execute('SELECT id,title,album_url,item_count,cover_url,updated FROM photos_albums ORDER BY item_count DESC').fetchall()
+            albums=[dict(r) for r in rows]
+            albums_count=len(albums)
+            total_items_in_albums=sum(a.get('item_count') or 0 for a in albums)
         with operation_lock:
             tasks=[dict(v) for v in operations.values()]
         
@@ -268,7 +272,7 @@ def routes(catalog):
 
         return {'token':TOKEN,'profiles':profiles,'selected_profile':selected_profile,
                 'preview':catalog.get_source_preview(),'monitor':catalog.get_monitor(),
-                'albums_count':albums_count,'eagle_folders':eagle_folders,
+                'albums':albums,'albums_count':albums_count,'total_items_in_albums':total_items_in_albums,'eagle_folders':eagle_folders,
                 'eagle_info':eagle_info,'eagle_libraries':eagle_libs,
                 'photo_status':{p['id']:catalog.get_photo_profile_status(p['id']) for p in profiles},
                 'photo_inventory':{p['id']:catalog.list_photo_items(p['id'],limit=5) for p in profiles},
