@@ -3,159 +3,201 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Photos ➔ Eagle · Quản Lý Profile & Thống Kê</title>
-  <link rel="stylesheet" href="/style.css?v=20261121-minimal">
+  <title>Photos ➔ Eagle Studio</title>
+  <link rel="stylesheet" href="/style.css?v=20261121-ios">
 </head>
 <body>
+  <!-- iOS Ambient Background Glows -->
+  <div class="ambient-bg" aria-hidden="true">
+    <div class="ambient-orb orb-1"></div>
+    <div class="ambient-orb orb-2"></div>
+    <div class="ambient-orb orb-3"></div>
+  </div>
+
   <div class="app-shell">
 
-    <!-- HEADER BAR -->
+    <!-- TOP NAVIGATION BAR -->
     <header class="topbar">
       <div class="topbar-left">
-        <span class="app-logo">⚡</span>
+        <div class="app-icon-squircle">⚡</div>
         <div>
           <h1 class="app-title">Photos ➔ Eagle Studio</h1>
-          <span class="app-subtitle">Quản lý Profile Google Photos · Thư viện Eagle · Thống kê</span>
+          <span class="app-subtitle">Quản lý Profile · Thư viện Eagle · Thống kê</span>
         </div>
       </div>
 
       <div class="topbar-right">
-        <button id="btnOpenMcpHub" class="pill-btn pill-mcp" title="Xem cổng kết nối MCP cho AI Agent">
-          <span class="dot dot-green"></span>
+        <button id="btnOpenMcpHub" class="ios-pill pill-mcp" title="Xem cổng kết nối MCP cho Antigravity AI">
+          <span class="pulse-dot"></span>
           <span id="mcpStatusLabel">MCP: 8898 (47 Tools)</span>
         </button>
-        <button id="btnRefreshAll" class="pill-btn" title="Làm mới toàn bộ số liệu Photos và Eagle">
+        <button id="btnRefreshAll" class="ios-pill" title="Làm mới toàn bộ số liệu Photos và Eagle">
           <span>↻</span> Làm mới
         </button>
-        <button id="btnSystemUpdate" class="pill-btn pill-update" title="Cập nhật phiên bản mới nhất từ GitHub (git pull)">
+        <button id="btnSystemUpdate" class="ios-pill pill-update" title="Cập nhật phiên bản mới nhất từ GitHub (git pull)">
           <span>🔄</span> Update Tool
         </button>
       </div>
     </header>
 
+    <!-- iOS LIVE ACTIVITY / PROGRESS STATUS BAR -->
+    <section id="liveActivityBar" class="live-activity-bar is-idle" aria-live="polite">
+      <div class="live-activity-top">
+        <div class="live-activity-left">
+          <span id="liveActivitySpinner" class="ios-spinner" style="display:none;"></span>
+          <span id="liveActivityDot" class="live-dot-idle"></span>
+          <span id="liveActivityText" class="live-activity-text">Sẵn sàng · Đang đồng bộ với MCP Gateway</span>
+        </div>
+        <div class="live-activity-right">
+          <span id="liveActivityPercent" class="live-percent-pill">Sẵn sàng</span>
+        </div>
+      </div>
+      <div class="live-progress-track">
+        <div id="liveProgressFill" class="live-progress-fill" style="width: 0%;"></div>
+      </div>
+    </section>
+
     <!-- MAIN CONTENT: 3 FOCUSED SECTIONS -->
     <main class="main-container">
 
-      <!-- SECTION 1: GOOGLE PHOTOS PROFILE MANAGEMENT -->
-      <section class="panel">
-        <div class="panel-header">
-          <div class="panel-title-wrap">
-            <span class="step-badge">1</span>
+      <!-- SECTION 1: GOOGLE PHOTOS PROFILES (COMPACT & AVATAR-BASED) -->
+      <section class="ios-card">
+        <div class="card-header">
+          <div class="active-profile-hero">
+            <div id="activeProfileAvatarWrap" class="avatar-ring avatar-lg">
+              <span class="avatar-initials">KP</span>
+            </div>
             <div>
-              <h2 class="panel-title">Profile Google Photos</h2>
-              <p class="panel-desc" id="activeAccountMeta">Đang kiểm tra tài khoản...</p>
+              <div class="card-kicker">1 · KHO GOOGLE PHOTOS</div>
+              <h2 class="card-title" id="activeProfileTitle">Đang tải profile...</h2>
+              <p class="card-subtitle" id="activeAccountMeta">Đang kiểm tra tài khoản...</p>
             </div>
           </div>
-          <div class="panel-actions">
-            <button id="btnOpenPhotosChrome" class="btn btn-info" title="Mở trình duyệt Chrome để đăng nhập Google Photos cho profile này">
+
+          <div class="card-actions">
+            <button id="btnOpenPhotosChrome" class="ios-btn btn-glass-blue" title="Mở trình duyệt Chrome để đăng nhập Google Photos">
               🌐 Mở Đăng Nhập
             </button>
-            <button id="btnScanPhotosProfile" class="btn btn-secondary" title="Quét lại số lượng ảnh, video và album của profile đang chọn">
+            <button id="btnScanPhotosProfile" class="ios-btn btn-glass" title="Quét lại số lượng ảnh, video và album của profile đang chọn">
               🔄 Quét Photos & Album
             </button>
           </div>
         </div>
 
-        <!-- Quick Selector & Add Profile Form -->
-        <div class="profile-toolbar">
-          <div class="field-group" style="flex: 1; min-width: 220px;">
-            <label for="photoProfileSelect" class="field-label">Profile đang sử dụng</label>
-            <select id="photoProfileSelect" class="select-input"></select>
+        <!-- Compact Search + Quick Add Row -->
+        <div class="profile-controls-bar">
+          <div class="search-wrap">
+            <span class="search-ico">🔍</span>
+            <input type="text" id="profileSearchInput" class="ios-input search-input" placeholder="Tìm nhanh profile...">
+            <span id="profileCountBadge" class="count-chip">0 profile</span>
           </div>
 
-          <div class="field-group" style="flex: 1.4; min-width: 260px;">
-            <label for="newProfileNameInput" class="field-label">Thêm Profile mới</label>
-            <div class="inline-form">
-              <input type="text" id="newProfileNameInput" class="text-input" placeholder="Nhập tên profile (VD: Spa Chi Nhánh 2...)">
-              <button id="btnCreateProfile" class="btn btn-primary">➕ Thêm</button>
-            </div>
+          <div class="add-profile-wrap">
+            <input type="text" id="newProfileNameInput" class="ios-input" placeholder="Tên profile mới (VD: Spa Q7...)">
+            <button id="btnCreateProfile" class="ios-btn btn-ios-primary">➕ Thêm</button>
           </div>
         </div>
 
-        <!-- Profile List Table -->
-        <div class="profile-list" id="profileListContainer">
-          <!-- Populated dynamically by app.js -->
+        <!-- Fixed-Height Scrollable Profile Grid (Never stretches the page!) -->
+        <div class="profile-grid-scroll">
+          <div id="profileListContainer" class="profile-grid">
+            <!-- Populated dynamically by app.js -->
+          </div>
         </div>
       </section>
 
       <!-- SECTION 2: EAGLE LIBRARY -->
-      <section class="panel">
-        <div class="panel-header">
-          <div class="panel-title-wrap">
-            <span class="step-badge step-eagle">2</span>
+      <section class="ios-card">
+        <div class="card-header">
+          <div class="title-block">
+            <div class="icon-badge icon-eagle">🦅</div>
             <div>
-              <h2 class="panel-title">Thư Viện Eagle DAM</h2>
-              <p class="panel-desc" id="eaglePathMeta">Đang kiểm tra kết nối Eagle...</p>
+              <div class="card-kicker">2 · THƯ VIỆN EAGLE DAM</div>
+              <h2 class="card-title">Quản Lý Library Eagle</h2>
+              <p class="card-subtitle" id="eaglePathMeta">Đang kiểm tra kết nối Eagle...</p>
             </div>
           </div>
-          <div class="panel-actions">
-            <span id="eagleConnBadge" class="status-badge">⏳ Đang kiểm tra</span>
-            <button id="btnOpenEagleDirect" class="btn btn-primary" title="Mở thư mục thư viện Eagle đang chọn">
-              📂 Mở Eagle DAM
+
+          <div class="card-actions">
+            <span id="eagleConnBadge" class="ios-status-pill">⏳ Đang kiểm tra</span>
+            <button id="btnOpenEagleDirect" class="ios-btn btn-ios-primary" title="Mở thư mục thư viện Eagle đang chọn">
+              📂 Mở Eagle
             </button>
-            <button id="btnRefreshEagle" class="btn btn-secondary" title="Làm mới số liệu từ ứng dụng Eagle">
-              🔄 Cập Nhật Eagle
+            <button id="btnRefreshEagle" class="ios-btn btn-glass" title="Làm mới số liệu từ ứng dụng Eagle">
+              🔄 Cập Nhật
             </button>
           </div>
         </div>
 
-        <div class="eagle-toolbar">
-          <div class="field-group" style="flex: 1;">
-            <label for="eagleLibrarySelect" class="field-label">Chọn Thư Viện Eagle (Library)</label>
-            <select id="eagleLibrarySelect" class="select-input">
-              <option value="">Đang tải danh sách thư viện Eagle...</option>
-            </select>
-          </div>
+        <div class="eagle-select-wrap">
+          <label for="eagleLibrarySelect" class="field-label">Thư viện đang kết nối</label>
+          <select id="eagleLibrarySelect" class="ios-select">
+            <option value="">Đang tải danh sách thư viện Eagle...</option>
+          </select>
         </div>
       </section>
 
       <!-- SECTION 3: STATISTICS (GOOGLE PHOTOS & EAGLE DAM) -->
       <section class="stats-grid">
-        <!-- Card Left: Google Photos Stats -->
-        <div class="panel stats-panel">
-          <div class="stats-panel-head">
-            <h3 class="stats-panel-title">📸 Thống Kê Profile Google Photos</h3>
-            <span class="stats-tag" id="statsProfileName">khaihoanskincare</span>
+        <!-- Left: Google Photos Stats -->
+        <div class="ios-card stats-card">
+          <div class="stats-card-head">
+            <div style="display:flex;align-items:center;gap:10px;min-width:0;">
+              <div id="statsAvatarMini" class="avatar-ring avatar-sm">
+                <span class="avatar-initials">KP</span>
+              </div>
+              <div style="min-width:0;">
+                <div class="card-kicker">THỐNG KÊ PHOTOS</div>
+                <h3 class="stats-title" id="statsProfileName">khaihoanskincare</h3>
+              </div>
+            </div>
           </div>
-          <div class="metrics-row">
-            <div class="metric-box">
-              <span class="metric-label">Ảnh tĩnh</span>
-              <strong class="metric-val" id="statPhotosCount">0</strong>
+
+          <div class="metrics-grid metrics-3">
+            <div class="metric-tile">
+              <span class="metric-label">📸 Ảnh tĩnh</span>
+              <strong class="metric-number" id="statPhotosCount">0</strong>
             </div>
-            <div class="metric-box">
-              <span class="metric-label">Video clip</span>
-              <strong class="metric-val" id="statVideosCount">0</strong>
+            <div class="metric-tile">
+              <span class="metric-label">🎬 Video clip</span>
+              <strong class="metric-number" id="statVideosCount">0</strong>
             </div>
-            <div class="metric-box metric-clickable" id="btnOpenAlbumsModal" title="Bấm để xem danh sách chi tiết toàn bộ Album">
-              <span class="metric-label">Số Album</span>
-              <strong class="metric-val metric-accent" id="statAlbumsCount">0</strong>
-              <span class="metric-sub">Xem danh sách ➔</span>
+            <div class="metric-tile metric-interactive" id="btnOpenAlbumsModal" title="Bấm để xem danh sách chi tiết toàn bộ Album">
+              <span class="metric-label">📁 Số Album</span>
+              <strong class="metric-number metric-blue" id="statAlbumsCount">0</strong>
+              <span class="metric-link">Xem chi tiết ➔</span>
             </div>
           </div>
         </div>
 
-        <!-- Card Right: Eagle DAM Stats -->
-        <div class="panel stats-panel">
-          <div class="stats-panel-head">
-            <h3 class="stats-panel-title">🦅 Thống Kê Thư Viện Eagle</h3>
-            <span class="stats-tag" id="statsEagleName">test.library</span>
+        <!-- Right: Eagle DAM Stats -->
+        <div class="ios-card stats-card">
+          <div class="stats-card-head">
+            <div style="display:flex;align-items:center;gap:10px;min-width:0;">
+              <div class="icon-badge icon-eagle-sm">🦅</div>
+              <div style="min-width:0;">
+                <div class="card-kicker">THỐNG KÊ EAGLE</div>
+                <h3 class="stats-title" id="statsEagleName">test.library</h3>
+              </div>
+            </div>
           </div>
-          <div class="metrics-row metrics-row-4">
-            <div class="metric-box">
-              <span class="metric-label">Tổng tư liệu</span>
-              <strong class="metric-val" id="statEagleTotal">0</strong>
+
+          <div class="metrics-grid metrics-4">
+            <div class="metric-tile">
+              <span class="metric-label">Tổng file</span>
+              <strong class="metric-number" id="statEagleTotal">0</strong>
             </div>
-            <div class="metric-box">
-              <span class="metric-label">Kho Hình Ảnh</span>
-              <strong class="metric-val" id="statEaglePhotos">0</strong>
+            <div class="metric-tile">
+              <span class="metric-label">Kho Ảnh</span>
+              <strong class="metric-number" id="statEaglePhotos">0</strong>
             </div>
-            <div class="metric-box">
+            <div class="metric-tile">
               <span class="metric-label">Kho Video</span>
-              <strong class="metric-val" id="statEagleVideos">0</strong>
+              <strong class="metric-number" id="statEagleVideos">0</strong>
             </div>
-            <div class="metric-box">
+            <div class="metric-tile">
               <span class="metric-label">Thư mục</span>
-              <strong class="metric-val" id="statEagleFolders">0</strong>
+              <strong class="metric-number" id="statEagleFolders">0</strong>
             </div>
           </div>
         </div>
@@ -165,32 +207,32 @@
 
     <!-- MODAL 1: ALBUMS LIST -->
     <div id="albumsModalBackdrop" class="modal-backdrop" style="display:none;"></div>
-    <div id="albumsModal" class="modal-box" style="display:none;">
+    <div id="albumsModal" class="ios-modal" style="display:none;">
       <div class="modal-header">
         <div>
           <h3 class="modal-title">📁 Danh Sách Album Google Photos</h3>
           <span class="modal-subtitle" id="albumsModalSummary">0 album</span>
         </div>
-        <button id="btnCloseAlbumsModal" class="btn-close">✕ Đóng</button>
+        <button id="btnCloseAlbumsModal" class="ios-btn btn-glass btn-sm">✕ Đóng</button>
       </div>
       <div class="modal-body">
         <div class="modal-toolbar">
-          <input type="text" id="albumSearchInput" class="text-input" placeholder="🔍 Tìm album theo tên khách hàng, SĐT..." style="flex:1;">
-          <button id="btnRescanAlbums" class="btn btn-secondary">🔄 Quét lại Album</button>
+          <input type="text" id="albumSearchInput" class="ios-input" placeholder="🔍 Tìm album theo tên khách hàng, SĐT..." style="flex:1;">
+          <button id="btnRescanAlbums" class="ios-btn btn-glass">🔄 Quét lại Album</button>
         </div>
-        <div id="albumsListContainer" class="albums-list"></div>
+        <div id="albumsListContainer" class="modal-list"></div>
       </div>
     </div>
 
     <!-- MODAL 2: MCP HUB -->
     <div id="mcpModalBackdrop" class="modal-backdrop" style="display:none;"></div>
-    <div id="mcpHubModal" class="modal-box" style="display:none;">
+    <div id="mcpHubModal" class="ios-modal" style="display:none;">
       <div class="modal-header">
         <div>
           <h3 class="modal-title">🔌 Cổng Kết Nối MCP Gateway</h3>
           <span class="modal-subtitle">Endpoint chuẩn cho Antigravity AI / Cursor / Claude</span>
         </div>
-        <button id="btnCloseMcpModal" class="btn-close">✕ Đóng</button>
+        <button id="btnCloseMcpModal" class="ios-btn btn-glass btn-sm">✕ Đóng</button>
       </div>
       <div class="modal-body">
         <div class="mcp-banner">
@@ -198,18 +240,18 @@
             <div class="field-label">HTTP MCP Endpoint</div>
             <code class="mcp-code">http://127.0.0.1:8898/mcp</code>
           </div>
-          <button id="btnCopyMcpConfig" class="btn btn-primary">📋 Sao chép JSON MCP</button>
+          <button id="btnCopyMcpConfig" class="ios-btn btn-ios-primary">📋 Sao chép JSON</button>
         </div>
-        <input type="text" id="mcpToolSearchInput" class="text-input" placeholder="🔍 Tìm kiếm công cụ MCP..." style="width:100%;margin-bottom:12px;">
-        <div id="mcpToolsList" class="mcp-tools-list"></div>
+        <input type="text" id="mcpToolSearchInput" class="ios-input" placeholder="🔍 Tìm kiếm công cụ MCP..." style="width:100%;margin-bottom:12px;">
+        <div id="mcpToolsList" class="modal-list"></div>
       </div>
     </div>
 
-    <!-- TOAST MESSAGE -->
-    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <!-- iOS FLOATING TOAST -->
+    <div id="toast" class="ios-toast" role="status" aria-live="polite"></div>
 
   </div>
 
-  <script src="/app.js?v=20261121-minimal"></script>
+  <script src="/app.js?v=20261121-ios"></script>
 </body>
 </html>
