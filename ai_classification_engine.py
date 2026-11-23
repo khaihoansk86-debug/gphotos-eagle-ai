@@ -1007,16 +1007,22 @@ class AIClassificationEngine:
         self,
         eagle_id_or_path: str,
         eagle_lib_path: str = r"D:\test.library",
-        frames: int = 9,
+        interval_seconds: int = 10,
+        start_second: int = 0,
+        max_frames: int = 24,
     ) -> Tuple[Dict[str, Any], Optional[bytes]]:
         """
-        VISUAL VIDEO SCRUBBING OVER MCP:
-        Extracts up to 9 evenly-spaced frames from a real local video (.mp4/.mov/.webm/.avi)
-        into ONE 3x3 numbered Storyboard JPEG (returned as ImageContent) + Whisper/ASMR intel.
-        If the Eagle entry is only a Google Photos cover .jpg placeholder (no local .mp4),
-        honestly reports is_real_video_file=False and returns the HD cover image.
+        THOROUGH 10-SECOND INTERVAL VIDEO SCRUBBING ALL THE WAY TO CLIP END:
+        Extracts 1 frame every `interval_seconds` (default 10s) from start to end of a real local video
+        (plus 00:01 & 00:03 for Hook 3s check, and the final second of the clip) into ONE timestamped
+        Storyboard JPEG (ImageContent) + Faster-Whisper Vietnamese speech & ASMR >4.5kHz intel.
+        For clips longer than `max_frames * interval_seconds` (>4 mins), returns `has_more=True` and
+        `next_start_second` so the AI inspects 100% of the clip to the very end before concluding.
         """
-        frames = max(4, min(int(frames), 12))
+        interval_seconds = max(2, min(int(interval_seconds), 30))
+        start_second = max(0, int(start_second))
+        max_frames = max(4, min(int(max_frames), 24))
+
         p = Path(eagle_id_or_path)
         video_file: Optional[Path] = p if (p.exists() and p.suffix.lower() in (".mp4", ".mov", ".webm", ".avi", ".mkv")) else None
         cover_fallback: Optional[Path] = None
@@ -1058,19 +1064,48 @@ class AIClassificationEngine:
         total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT) or 0)
         duration = total_frames / fps if fps > 0 else 0.0
 
-        cols = 3
-        rows_n = math.ceil(frames / cols)
-        tile_w, tile_h = 320, 320
+        # Build exact sampling schedule: Hook (1s, 3s) + every 10s all the way to end
+        sample_secs: List[float] = []
+        if duration <= 0.5:
+            sample_secs = [0.0]
+        else:
+            if start_second == 0:
+                if duration > 1.0:
+                    sample_secs.append(1.0)
+                if duration > 3.5:
+                    sample_secs.append(3.0)
+                t = float(interval_seconds)
+            else:
+                t = float(start_second)
+
+            while t < duration - 0.5:
+                sample_secs.append(t)
+                t += float(interval_seconds)
+
+            # Always include near-end frame so AI sees the conclusion of the clip
+            end_sec = max(0.0, duration - 0.5)
+            if not sample_secs or (end_sec - sample_secs[-1]) >= 2.0:
+                sample_secs.append(end_sec)
+
+            # For very short clips (<10s), ensure at least 4 evenly spaced frames
+            if start_second == 0 and len(sample_secs) < 4 and duration >= 2.0:
+                sample_secs = [round((i + 0.5) * duration / 4.0, 1) for i in range(4)]
+
+        has_more = len(sample_secs) > max_frames
+        page_secs = sample_secs[:max_frames]
+        next_start_second = int(sample_secs[max_frames]) if has_more else None
+
+        cols = 4 if len(page_secs) > 9 else 3
+        rows_n = math.ceil(len(page_secs) / cols)
+        tile_w, tile_h = 280, 280
         canvas = Image.new("RGB", (cols * tile_w, rows_n * tile_h), (14, 18, 28))
         draw = ImageDraw.Draw(canvas)
         timestamps = []
 
-        for idx in range(frames):
-            frac = (idx + 0.5) / frames
-            frame_no = min(max(0, total_frames - 1), int(frac * total_frames))
+        for idx, ts_sec in enumerate(page_secs):
+            frame_no = min(max(0, total_frames - 1), int(ts_sec * fps))
             cap.set(cv2.CAP_PROP_POS_FRAMES, frame_no)
             ok, bgr = cap.read()
-            ts_sec = frame_no / fps if fps > 0 else 0.0
             ts_str = f"{int(ts_sec // 60):02d}:{int(ts_sec % 60):02d}"
             timestamps.append(ts_str)
             r_i, c_i = divmod(idx, cols)
@@ -1079,27 +1114,37 @@ class AIClassificationEngine:
                 rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
                 pil_im = ImageOps.fit(Image.fromarray(rgb), (tile_w - 6, tile_h - 6))
                 canvas.paste(pil_im, (x0 + 3, y0 + 3))
-            draw.rectangle([x0 + 8, y0 + 8, x0 + 92, y0 + 30], fill=(0, 0, 0))
+            draw.rectangle([x0 + 8, y0 + 8, x0 + 96, y0 + 30], fill=(0, 0, 0))
             draw.text((x0 + 14, y0 + 13), f"#{idx + 1} {ts_str}", fill=(255, 255, 255))
         cap.release()
 
         buf = io.BytesIO()
-        canvas.save(buf, format="JPEG", quality=86)
+        canvas.save(buf, format="JPEG", quality=85)
 
         audio_intel = {}
-        try:
-            from video_analyzer import VideoAnalyzer
-            audio_intel = VideoAnalyzer.compile_video_intelligence(str(video_file))
-        except Exception:
-            pass
+        if start_second == 0:
+            try:
+                from video_analyzer import VideoAnalyzer
+                audio_intel = VideoAnalyzer.compile_video_intelligence(str(video_file))
+            except Exception:
+                pass
 
         return {
             "status": "success",
             "is_real_video_file": True,
             "video_path": str(video_file),
             "duration_seconds": round(duration, 1),
-            "frames_extracted": frames,
+            "interval_seconds": interval_seconds,
+            "frames_extracted": len(page_secs),
             "timestamps": timestamps,
+            "has_more": has_more,
+            "next_start_second": next_start_second,
+            "instruction": (
+                f"Clip dài {round(duration, 1)}s. Nếu has_more=true, BẮT BUỘC gọi tiếp get_video_storyboard(..., start_second={next_start_second}) "
+                "để xem đủ từng mốc 10 giây tới hết clip trước khi đưa ra kết luận phân loại!"
+                if has_more
+                else f"Đã xem đủ toàn bộ {round(duration, 1)}s của clip theo mốc {interval_seconds} giây tới tận cuối clip. Có thể kết luận phân loại ngay."
+            ),
             "audio_and_whisper_intel": audio_intel,
         }, buf.getvalue()
 

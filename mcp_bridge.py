@@ -39,7 +39,7 @@ DESCRIPTIONS = {
     'scan_eagle_library': 'LAYER 2 (EAGLE AUDIT): Audit total photos/videos, AI_Vision_Verified progress, unreviewed remaining count, and real album context coverage.',
     'get_eagle_review_sheet': 'LAYER 2 (AI VISION BATCH): Read up to 24 unreviewed items directly from Eagle DAM as ONE numbered Contact Sheet JPEG (ImageContent) + metadata.',
     'get_eagle_item_detail': 'LAYER 2 (AI VISION ZOOM): Return ONE high-res zoomed JPEG (up to 1200px, ImageContent) of a specific Eagle item + full metadata + chronological neighbors within 35 min (before/after) to read small text or verify details.',
-    'get_video_storyboard': 'LAYER 2 (VIDEO VISION): Extract up to 9 evenly-spaced frames from a real local video (.mp4/.mov) in Eagle into ONE 3x3 timestamped Storyboard JPEG (ImageContent) + Faster-Whisper Vietnamese speech & ASMR >4.5kHz intel.',
+    'get_video_storyboard': 'LAYER 2 (THOROUGH 10s VIDEO VISION): Extract 1 frame every 10 seconds (plus 00:01 & 00:03 Hook + end frame) ALL THE WAY TO CLIP END into ONE timestamped Storyboard JPEG (ImageContent) + Faster-Whisper Vietnamese speech & ASMR >4.5kHz intel. Supports start_second pagination when has_more=true so AI inspects 100% of long clips before concluding.',
     'apply_eagle_vision_decisions': 'LAYER 2 (CLEAN OVERWRITE WRITE): Apply AI Vision classifications cleanly (supports standard categories OR dynamic folder_names for any industry), preserves real customer album folders & tags, and marks AI_Vision_Verified.',
     'search_eagle_items': 'LAYER 2 (CONTENT RETRIEVAL): Search classified Eagle items directly by keyword, tag, folder, kind (photo/video), and min_star to pull assets for posts, TikTok, or CapCut.',
     'cluster_treatment_sessions': 'LAYER 2 (TIMELINE): Fast 0.05s 35-minute temporal session clustering for Before/In-Process/After journeys.',
@@ -58,7 +58,7 @@ DESCRIPTIONS = {
 def schema(name):
     properties, required = {}, []
     for p in inspect.signature(getattr(catalog,name)).parameters.values():
-        if p.name in ('budget','limit','offset','size','extra_budget','max_steps','max_items','threshold','max_gap_minutes','batch_size','concurrency','max_dim','frames','min_star'):
+        if p.name in ('budget','limit','offset','size','extra_budget','max_steps','max_items','threshold','max_gap_minutes','batch_size','concurrency','max_dim','frames','min_star','interval_seconds','start_second','max_frames'):
             value={'type':'integer'}
         elif p.name in ('asset_ids','crop'):
             value={'type':'array','items':{'type':'string' if p.name=='asset_ids' else 'number'}}

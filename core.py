@@ -750,11 +750,13 @@ class Catalog:
             max_dim=max_dim,
         )
 
-    def get_video_storyboard(self, eagle_id_or_path: str, eagle_lib_path: str = '', frames: int = 9):
+    def get_video_storyboard(self, eagle_id_or_path: str, eagle_lib_path: str = '', interval_seconds: int = 10, start_second: int = 0, max_frames: int = 24):
         return self._ai_engine().get_video_storyboard(
             eagle_id_or_path=eagle_id_or_path,
             eagle_lib_path=self._resolve_eagle_lib(eagle_lib_path),
-            frames=frames,
+            interval_seconds=interval_seconds,
+            start_second=start_second,
+            max_frames=max_frames,
         )
 
     def search_eagle_items(self, keyword: str = '', tag: str = '', folder: str = '', kind: str = 'all', min_star: int = 0, limit: int = 30, eagle_lib_path: str = '') -> dict:
