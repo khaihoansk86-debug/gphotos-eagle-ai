@@ -279,44 +279,73 @@ class PhotosInventory:
                 d = ' '.join(time_date.split()[1:])
                 date_distribution[d] = date_distribution.get(d, 0) + 1
 
-        # 3. Gather albums (customers)
+        # 3. Gather albums & dynamically analyze album naming patterns for AI context
         albums_info = self.list_albums(profile_id)
         albums = albums_info.get('albums', [])
+        top_clients = sorted(albums, key=lambda x: (x.get('item_count') or 0), reverse=True)[:15]
 
-        top_clients = sorted(albums, key=lambda x: (x.get('item_count') or 0), reverse=True)[:10]
+        import re
+        phone_pat = re.compile(r'\b0[35789]\d{8}\b')
+        stt_pat = re.compile(r'\bstt\s*\d+\b', re.I)
+        rel_pat = re.compile(r'\((?:con|ck|chồng|vợ|bạn|em|chị|b\s*c)[^)]*\)', re.I)
 
-        # 4. Construct semantic intelligence summary
+        with_phone = [a['title'] for a in albums if phone_pat.search(a.get('title', ''))]
+        with_stt = [a['title'] for a in albums if stt_pat.search(a.get('title', ''))]
+        with_rel = [a['title'] for a in albums if rel_pat.search(a.get('title', ''))]
+        large_albums = [a for a in albums if (a.get('item_count') or 0) >= 20]
+        medium_albums = [a for a in albums if 5 <= (a.get('item_count') or 0) < 20]
+        small_albums = [a for a in albums if (a.get('item_count') or 0) < 5]
+        total_items_in_albums = sum(a.get('item_count') or 0 for a in albums)
+
+        if len(with_phone) >= max(3, int(len(albums) * 0.3)):
+            org_style = (
+                "Hồ sơ theo từng Khách hàng (Tên + SĐT / mã STT / ghi chú người giới thiệu). "
+                "Mỗi album đại diện cho 1 ca khách hàng (nhiều buổi Before-After / quá trình điều trị)."
+            )
+        elif len(albums) > 0:
+            org_style = "Album theo chủ đề / dự án / nhóm sự kiện. Agent nên đọc danh sách tên album để nhóm thư mục Eagle tương ứng."
+        else:
+            org_style = "Chưa có album được quét; hãy chạy list_photo_albums(refresh=True) hoặc phân loại trực tiếp trên Eagle."
+
+        # 4. Construct dynamic semantic intelligence & Eagle classification blueprint
         return {
-            'business': 'Khải Hoàn Skincare (Spa & Phục hồi da chuyên sâu)',
             'account': account,
             'summary': {
                 'total_media': len(rows),
                 'photos': total_photos,
                 'videos': total_videos,
-                'vertical_ratio': f'{(vertical_count / max(1, len(rows))) * 100:.1f}% (Chuẩn Reels/TikTok/Shorts)',
-                'total_client_albums': len(albums),
+                'vertical_ratio': f'{(vertical_count / max(1, len(rows))) * 100:.1f}%',
+                'total_albums': len(albums),
+                'total_items_in_albums': total_items_in_albums,
                 'top_active_days': sorted(date_distribution.items(), key=lambda x: x[1], reverse=True)[:5]
             },
-            'top_clients_with_most_assets': [
+            'album_naming_patterns': {
+                'inferred_organization_style': org_style,
+                'albums_with_phone_number': len(with_phone),
+                'albums_with_stt_code': len(with_stt),
+                'albums_with_referral_or_family_note': len(with_rel),
+                'size_distribution': {
+                    'large_20_plus_items': len(large_albums),
+                    'medium_5_to_19_items': len(medium_albums),
+                    'small_under_5_items': len(small_albums),
+                },
+                'sample_phone_albums': with_phone[:6],
+                'sample_referral_albums': with_rel[:5],
+            },
+            'top_albums': [
                 {'name': c['title'], 'items': c.get('item_count'), 'album_url': c['album_url']}
                 for c in top_clients
             ],
-            'all_clients': [
-                {'name': c['title'], 'items': c.get('item_count'), 'album_url': c['album_url']}
+            'all_albums': [
+                {'name': c['title'], 'items': c.get('item_count')}
                 for c in sorted(albums, key=lambda x: (x.get('item_count') or 0), reverse=True)
             ],
-            'marketing_readiness': {
-                '01_Hook 3s & Cận cảnh da': 'Cực kỳ giá trị (~366 tư liệu), cận cảnh mụn viêm, cồi mụn, lỗ chân lông, giữ chân người xem 3s đầu TikTok/Reels.',
-                '02_B-Roll Liệu trình & Thao tác': 'Rất phong phú (~164 tư liệu), kỹ thuật viên đeo găng tay thao tác, chiếu đèn sinh học Omega light, quy trình chuẩn y khoa.',
-                '03_Feedback & Khách hàng': 'Đầy đủ hồ sơ khách hàng nằm thư giãn, soi gương hài lòng sau buổi trị liệu, làm bằng chứng Social Proof.',
-                '04_Cơ sở vật chất & Đội ngũ': 'Tư liệu phòng trị liệu sạch sẽ, dàn máy thẩm mỹ công nghệ cao, giường spa chuẩn vô trùng.',
-                '05_Raw Video Footage': 'Kho clip video ngắn dọc 9:16 sẵn sàng kéo thả vào CapCut để cắt ghép video triệu view.'
-            },
-            'recommended_agent_actions': [
-                'Dùng list_photo_albums để định vị nhanh hồ sơ khách hàng cần làm case study.',
-                'Dùng get_album_items để lấy toàn bộ ảnh Before-After của 1 khách hàng cụ thể.',
-                'Dùng get_photo_contact_sheet để xem cùng lúc 12 ảnh với 1 lần gọi tiết kiệm token.',
-                'Dùng Eagle để tìm kiếm theo Tag (#Ảnh Dọc, #Before After, #Bác sĩ Spa).'
+            'recommended_eagle_first_workflow': [
+                '1. Đã nắm ngữ cảnh từ số lượng & đặc điểm tên Album trên Google Photos.',
+                '2. Chạy sync_all_photos_to_eagle (nếu cần kéo thêm ảnh/clip mới vào Eagle).',
+                '3. Gọi get_eagle_folder_tree + scan_eagle_library để xem cây thư mục & tiến độ trên Eagle.',
+                '4. Gọi get_eagle_review_sheet (20 ảnh/tấm), zoom bằng get_eagle_item_detail hoặc xem clip bằng get_video_storyboard.',
+                '5. Gọi apply_eagle_vision_decisions để phân loại sạch theo ngữ cảnh vào Eagle.'
             ]
         }
 

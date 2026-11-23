@@ -739,3 +739,31 @@ class Catalog:
             eagle_lib_path=self._resolve_eagle_lib(eagle_lib_path),
             decisions=decisions,
         )
+
+    def get_eagle_folder_tree(self, eagle_lib_path: str = '') -> dict:
+        return self._ai_engine().get_eagle_folder_tree(eagle_lib_path=self._resolve_eagle_lib(eagle_lib_path))
+
+    def get_eagle_item_detail(self, eagle_id: str, eagle_lib_path: str = '', max_dim: int = 1200):
+        return self._ai_engine().get_eagle_item_detail(
+            eagle_id=eagle_id,
+            eagle_lib_path=self._resolve_eagle_lib(eagle_lib_path),
+            max_dim=max_dim,
+        )
+
+    def get_video_storyboard(self, eagle_id_or_path: str, eagle_lib_path: str = '', frames: int = 9):
+        return self._ai_engine().get_video_storyboard(
+            eagle_id_or_path=eagle_id_or_path,
+            eagle_lib_path=self._resolve_eagle_lib(eagle_lib_path),
+            frames=frames,
+        )
+
+    def search_eagle_items(self, keyword: str = '', tag: str = '', folder: str = '', kind: str = 'all', min_star: int = 0, limit: int = 30, eagle_lib_path: str = '') -> dict:
+        return self._ai_engine().search_eagle_items(
+            eagle_lib_path=self._resolve_eagle_lib(eagle_lib_path),
+            keyword=keyword,
+            tag=tag,
+            folder=folder,
+            kind=kind,
+            min_star=min_star,
+            limit=limit,
+        )

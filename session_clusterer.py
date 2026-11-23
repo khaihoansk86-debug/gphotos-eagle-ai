@@ -17,6 +17,12 @@ def parse_label_datetime(label: str) -> Optional[datetime]:
     if m:
         h, mn, s, day, month, year = map(int, m.groups())
         return datetime(year, month, day, h, mn, s)
+    # 1b. Sanitized Eagle filename pattern: HHMMSS dd thg MM, yyyy (colons stripped)
+    m1b = re.search(r'\b(\d{2})(\d{2})(\d{2})\s+(\d{1,2})\s+thg\s+(\d{1,2}),\s*(\d{4})', label)
+    if m1b:
+        h, mn, s, day, month, year = map(int, m1b.groups())
+        if 0 <= h <= 23 and 0 <= mn <= 59 and 0 <= s <= 59:
+            return datetime(year, month, day, h, mn, s)
     # 2. Pattern: dd thg MM, yyyy
     m2 = re.search(r'(\d{1,2})\s+thg\s+(\d{1,2}),\s*(\d{4})', label)
     if m2:

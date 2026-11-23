@@ -748,7 +748,57 @@ class AIClassificationEngine:
 
         eagle_lib = Path(eagle_lib_path)
         images_dir = eagle_lib / "images"
+        master_file = eagle_lib / "metadata.json"
         now_ms = int(time.time() * 1000)
+
+        # Load existing Eagle folder tree so dynamic folder_names can match or auto-create
+        master_data = json.loads(master_file.read_text(encoding="utf-8")) if master_file.exists() else {"folders": []}
+        name_to_fid: Dict[str, str] = {}
+
+        def index_folders(nodes):
+            for n in nodes or []:
+                nm = (n.get("name") or "").strip().lower()
+                if nm and n.get("id"):
+                    name_to_fid[nm] = n["id"]
+                index_folders(n.get("children"))
+
+        index_folders(master_data.get("folders"))
+        tree_modified = False
+
+        def resolve_or_create_folder(folder_name: str, is_vid: bool) -> str:
+            nonlocal tree_modified
+            key = folder_name.strip().lower()
+            if key in name_to_fid:
+                return name_to_fid[key]
+            # Fuzzy substring match against existing folder names
+            for existing_nm, fid in name_to_fid.items():
+                if key in existing_nm or existing_nm in key:
+                    return fid
+            # Create new dynamic folder under Photo or Video root (or top-level if tree has custom roots)
+            import hashlib
+            new_id = ("DV_" if is_vid else "DP_") + hashlib.md5(key.encode("utf-8")).hexdigest().upper()[:10]
+            new_node = {
+                "id": new_id,
+                "name": folder_name.strip(),
+                "description": "Thư mục tạo động theo ngữ cảnh bởi AI Vision",
+                "children": [],
+                "modificationTime": now_ms,
+                "tags": [],
+                "icon": "folder",
+                "iconColor": "default",
+            }
+            target_root_id = F_ROOT_VIDEO if is_vid else F_ROOT_PHOTO
+            placed = False
+            for root in master_data.setdefault("folders", []):
+                if root.get("id") == target_root_id:
+                    root.setdefault("children", []).append(new_node)
+                    placed = True
+                    break
+            if not placed:
+                master_data["folders"].append(new_node)
+            name_to_fid[key] = new_id
+            tree_modified = True
+            return new_id
 
         photo_cat_map = {
             "hero": F_PHOTO_HERO,
@@ -780,6 +830,7 @@ class AIClassificationEngine:
             cat = str(d.get("category") or ("b_roll" if is_vid else "archive")).strip().lower()
             star = max(1, min(5, int(d.get("star") or (5 if cat in ("hero", "hook_3s") else 4))))
             ai_tags = d.get("tags") if isinstance(d.get("tags"), list) else []
+            custom_folder_names = d.get("folder_names") if isinstance(d.get("folder_names"), list) else []
             summary = str(d.get("summary") or "").strip()
             capcut_note = str(d.get("capcut_note") or "").strip()
 
@@ -788,7 +839,11 @@ class AIClassificationEngine:
             preserved_customer_folders = [
                 fid for fid in old_folders if str(fid).startswith("AP_") or str(fid).startswith("AV_")
             ]
-            if is_vid:
+            dynamic_fids = [resolve_or_create_folder(fn, is_vid) for fn in custom_folder_names if str(fn).strip()]
+            if dynamic_fids:
+                root_fid = F_ROOT_VIDEO if is_vid else F_ROOT_PHOTO
+                new_folders = [root_fid, *dynamic_fids, *preserved_customer_folders]
+            elif is_vid:
                 new_folders = [F_ROOT_VIDEO, video_cat_map.get(cat, F_VIDEO_BROLL), *preserved_customer_folders]
             else:
                 new_folders = [F_ROOT_PHOTO, photo_cat_map.get(cat, F_PHOTO_ARCHIVE), *preserved_customer_folders]
@@ -803,7 +858,7 @@ class AIClassificationEngine:
             url = meta.get("url") or ""
             annotation = (
                 f"{'🎬 VIDEO' if is_vid else '📸 ẢNH'} · ĐÃ PHÂN LOẠI TRỰC TIẾP BỞI AI VISION (LỚP 2)\n"
-                f"• Danh mục nghiệp vụ: {cat} ({star}⭐)\n"
+                f"• Danh mục nghiệp vụ: {', '.join(custom_folder_names) if custom_folder_names else cat} ({star}⭐)\n"
                 f"• Khách hàng (Album thật): {cust_str}\n"
                 f"• Mô tả thị giác AI: {summary or meta.get('name', '')}\n"
                 + (f"• 🎬 Gợi ý dựng CapCut: {capcut_note}\n" if capcut_note else "")
@@ -818,9 +873,308 @@ class AIClassificationEngine:
             mf.write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
             updated += 1
 
+        if tree_modified:
+            master_data["modificationTime"] = now_ms
+            master_file.write_text(json.dumps(master_data, ensure_ascii=False, indent=2), encoding="utf-8")
+
         return {
             "status": "success",
             "eagle_library": str(eagle_lib),
             "updated_now": updated,
             "not_found": not_found,
+            "tree_updated": tree_modified,
+        }
+
+    def get_eagle_folder_tree(self, eagle_lib_path: str = r"D:\test.library") -> Dict[str, Any]:
+        """Reads the complete existing folder hierarchy of an Eagle library with live item counts."""
+        eagle_lib = Path(eagle_lib_path)
+        master_file = eagle_lib / "metadata.json"
+        images_dir = eagle_lib / "images"
+        if not master_file.exists():
+            raise ValueError(f"Eagle metadata.json not found in: {eagle_lib}")
+
+        master_data = json.loads(master_file.read_text(encoding="utf-8"))
+        folder_counts: Dict[str, int] = {}
+        if images_dir.exists():
+            for d in images_dir.glob("*.info"):
+                mf = d / "metadata.json"
+                if not mf.exists():
+                    continue
+                try:
+                    m = json.loads(mf.read_text(encoding="utf-8"))
+                    if m.get("isDeleted"):
+                        continue
+                    for fid in m.get("folders") or []:
+                        folder_counts[fid] = folder_counts.get(fid, 0) + 1
+                except Exception:
+                    continue
+
+        def simplify(nodes):
+            out = []
+            for n in nodes or []:
+                fid = n.get("id", "")
+                out.append({
+                    "id": fid,
+                    "name": n.get("name", ""),
+                    "item_count": folder_counts.get(fid, 0),
+                    "children": simplify(n.get("children")),
+                })
+            return out
+
+        tree = simplify(master_data.get("folders"))
+        return {
+            "status": "success",
+            "eagle_library": str(eagle_lib),
+            "root_count": len(tree),
+            "folders": tree,
+        }
+
+    def get_eagle_item_detail(
+        self,
+        eagle_id: str,
+        eagle_lib_path: str = r"D:\test.library",
+        max_dim: int = 1200,
+    ) -> Tuple[Dict[str, Any], Optional[bytes]]:
+        """
+        HIGH-RES ZOOM + CONTEXT NEIGHBORS:
+        Returns ONE crisp high-res JPEG (up to 1200px) as ImageContent plus full metadata
+        and chronological neighbor items (before/after) so AI can read fine text or judge Before-After accurately.
+        """
+        eagle_lib = Path(eagle_lib_path)
+        images_dir = eagle_lib / "images"
+        info_dir = images_dir / f"{eagle_id}.info"
+        mf = info_dir / "metadata.json"
+        if not mf.exists():
+            raise ValueError(f"Eagle item not found: {eagle_id}")
+
+        meta = json.loads(mf.read_text(encoding="utf-8"))
+        preview = self._find_eagle_preview_image(info_dir, meta)
+
+        img_bytes = None
+        if preview and preview.exists():
+            with Image.open(preview) as im:
+                rgb = im.convert("RGB")
+                rgb.thumbnail((max_dim, max_dim))
+                buf = io.BytesIO()
+                rgb.save(buf, format="JPEG", quality=90)
+                img_bytes = buf.getvalue()
+
+        # Find chronological neighbors by parsed timestamp in name (same day / session)
+        from session_clusterer import parse_label_datetime
+        target_dt = parse_label_datetime(meta.get("name", ""))
+        neighbors = []
+        if target_dt:
+            scored = []
+            for d in images_dir.glob("*.info"):
+                if d.stem == eagle_id:
+                    continue
+                nmf = d / "metadata.json"
+                if not nmf.exists():
+                    continue
+                try:
+                    nm = json.loads(nmf.read_text(encoding="utf-8"))
+                    ndt = parse_label_datetime(nm.get("name", ""))
+                    if ndt:
+                        diff_sec = (ndt - target_dt).total_seconds()
+                        if abs(diff_sec) <= 2100:  # within 35-min session window
+                            scored.append((diff_sec, nm.get("id") or d.stem, nm.get("name", ""), nm.get("tags") or []))
+                except Exception:
+                    continue
+            before = sorted([x for x in scored if x[0] < 0], key=lambda x: x[0], reverse=True)[:2]
+            after = sorted([x for x in scored if x[0] > 0], key=lambda x: x[0])[:2]
+            for diff_sec, nid, nname, ntags in reversed(before):
+                neighbors.append({"relation": "before", "delta_seconds": int(diff_sec), "eagle_id": nid, "name": nname, "tags": ntags})
+            for diff_sec, nid, nname, ntags in after:
+                neighbors.append({"relation": "after", "delta_seconds": int(diff_sec), "eagle_id": nid, "name": nname, "tags": ntags})
+
+        payload = {
+            "eagle_id": meta.get("id") or eagle_id,
+            "name": meta.get("name", ""),
+            "ext": meta.get("ext", ""),
+            "kind": "video" if self._is_eagle_video(meta) else "photo",
+            "star": meta.get("star", 0),
+            "width": meta.get("width", 0),
+            "height": meta.get("height", 0),
+            "tags": meta.get("tags") or [],
+            "folders": meta.get("folders") or [],
+            "url": meta.get("url", ""),
+            "annotation": meta.get("annotation", ""),
+            "session_neighbors_within_35min": neighbors,
+        }
+        return payload, img_bytes
+
+    def get_video_storyboard(
+        self,
+        eagle_id_or_path: str,
+        eagle_lib_path: str = r"D:\test.library",
+        frames: int = 9,
+    ) -> Tuple[Dict[str, Any], Optional[bytes]]:
+        """
+        VISUAL VIDEO SCRUBBING OVER MCP:
+        Extracts up to 9 evenly-spaced frames from a real local video (.mp4/.mov/.webm/.avi)
+        into ONE 3x3 numbered Storyboard JPEG (returned as ImageContent) + Whisper/ASMR intel.
+        If the Eagle entry is only a Google Photos cover .jpg placeholder (no local .mp4),
+        honestly reports is_real_video_file=False and returns the HD cover image.
+        """
+        frames = max(4, min(int(frames), 12))
+        p = Path(eagle_id_or_path)
+        video_file: Optional[Path] = p if (p.exists() and p.suffix.lower() in (".mp4", ".mov", ".webm", ".avi", ".mkv")) else None
+        cover_fallback: Optional[Path] = None
+        meta_info: Dict[str, Any] = {}
+
+        if not video_file:
+            eagle_lib = Path(eagle_lib_path)
+            info_dir = eagle_lib / "images" / f"{eagle_id_or_path}.info"
+            mf = info_dir / "metadata.json"
+            if mf.exists():
+                meta_info = json.loads(mf.read_text(encoding="utf-8"))
+                for f in info_dir.iterdir():
+                    if f.suffix.lower() in (".mp4", ".mov", ".webm", ".avi", ".mkv"):
+                        video_file = f
+                        break
+                cover_fallback = self._find_eagle_preview_image(info_dir, meta_info)
+
+        if not video_file:
+            img_bytes = None
+            if cover_fallback and cover_fallback.exists():
+                with Image.open(cover_fallback) as im:
+                    rgb = im.convert("RGB")
+                    rgb.thumbnail((900, 900))
+                    buf = io.BytesIO()
+                    rgb.save(buf, format="JPEG", quality=88)
+                    img_bytes = buf.getvalue()
+            return {
+                "status": "cover_only",
+                "is_real_video_file": False,
+                "eagle_id": eagle_id_or_path,
+                "name": meta_info.get("name", ""),
+                "url": meta_info.get("url", ""),
+                "note": "Mục này trong Eagle hiện chỉ lưu ảnh bìa .jpg + link Google Photos (chưa có file .mp4 gốc trên ổ cứng). Đã trả về ảnh bìa nét cao để AI xem.",
+            }, img_bytes
+
+        import cv2
+        cap = cv2.VideoCapture(str(video_file))
+        fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
+        total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT) or 0)
+        duration = total_frames / fps if fps > 0 else 0.0
+
+        cols = 3
+        rows_n = math.ceil(frames / cols)
+        tile_w, tile_h = 320, 320
+        canvas = Image.new("RGB", (cols * tile_w, rows_n * tile_h), (14, 18, 28))
+        draw = ImageDraw.Draw(canvas)
+        timestamps = []
+
+        for idx in range(frames):
+            frac = (idx + 0.5) / frames
+            frame_no = min(max(0, total_frames - 1), int(frac * total_frames))
+            cap.set(cv2.CAP_PROP_POS_FRAMES, frame_no)
+            ok, bgr = cap.read()
+            ts_sec = frame_no / fps if fps > 0 else 0.0
+            ts_str = f"{int(ts_sec // 60):02d}:{int(ts_sec % 60):02d}"
+            timestamps.append(ts_str)
+            r_i, c_i = divmod(idx, cols)
+            x0, y0 = c_i * tile_w, r_i * tile_h
+            if ok and bgr is not None:
+                rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
+                pil_im = ImageOps.fit(Image.fromarray(rgb), (tile_w - 6, tile_h - 6))
+                canvas.paste(pil_im, (x0 + 3, y0 + 3))
+            draw.rectangle([x0 + 8, y0 + 8, x0 + 92, y0 + 30], fill=(0, 0, 0))
+            draw.text((x0 + 14, y0 + 13), f"#{idx + 1} {ts_str}", fill=(255, 255, 255))
+        cap.release()
+
+        buf = io.BytesIO()
+        canvas.save(buf, format="JPEG", quality=86)
+
+        audio_intel = {}
+        try:
+            from video_analyzer import VideoAnalyzer
+            audio_intel = VideoAnalyzer.compile_video_intelligence(str(video_file))
+        except Exception:
+            pass
+
+        return {
+            "status": "success",
+            "is_real_video_file": True,
+            "video_path": str(video_file),
+            "duration_seconds": round(duration, 1),
+            "frames_extracted": frames,
+            "timestamps": timestamps,
+            "audio_and_whisper_intel": audio_intel,
+        }, buf.getvalue()
+
+    def search_eagle_items(
+        self,
+        eagle_lib_path: str = r"D:\test.library",
+        keyword: str = "",
+        tag: str = "",
+        folder: str = "",
+        kind: str = "all",
+        min_star: int = 0,
+        limit: int = 30,
+    ) -> Dict[str, Any]:
+        """Fast local query directly over Eagle DAM to retrieve classified assets for content production."""
+        eagle_lib = Path(eagle_lib_path)
+        images_dir = eagle_lib / "images"
+        master_file = eagle_lib / "metadata.json"
+        if not images_dir.exists():
+            raise ValueError(f"Eagle images folder not found: {images_dir}")
+
+        fid_to_name: Dict[str, str] = {}
+        if master_file.exists():
+            md = json.loads(master_file.read_text(encoding="utf-8"))
+            def walk(nodes):
+                for n in nodes or []:
+                    fid_to_name[n.get("id", "")] = n.get("name", "")
+                    walk(n.get("children"))
+            walk(md.get("folders"))
+
+        kw = (keyword or "").strip().lower()
+        tg = (tag or "").strip().lower()
+        fl = (folder or "").strip().lower()
+        limit = max(1, min(int(limit), 100))
+
+        matches = []
+        for d in images_dir.glob("*.info"):
+            mf = d / "metadata.json"
+            if not mf.exists():
+                continue
+            try:
+                m = json.loads(mf.read_text(encoding="utf-8"))
+            except Exception:
+                continue
+            if m.get("isDeleted"):
+                continue
+            item_kind = "video" if self._is_eagle_video(m) else "photo"
+            if kind in ("photo", "video") and item_kind != kind:
+                continue
+            if int(m.get("star") or 0) < int(min_star):
+                continue
+            tags = m.get("tags") or []
+            f_names = [fid_to_name.get(fid, fid) for fid in (m.get("folders") or [])]
+            if tg and not any(tg in t.lower() for t in tags):
+                continue
+            if fl and not any(fl in fn.lower() for fn in f_names):
+                continue
+            if kw:
+                hay = f"{m.get('name', '')} {m.get('annotation', '')} {' '.join(tags)} {' '.join(f_names)}".lower()
+                if kw not in hay:
+                    continue
+            matches.append({
+                "eagle_id": m.get("id") or d.stem,
+                "name": m.get("name", ""),
+                "kind": item_kind,
+                "star": m.get("star", 0),
+                "tags": tags,
+                "folders": f_names,
+                "url": m.get("url", ""),
+            })
+
+        matches.sort(key=lambda x: x["star"], reverse=True)
+        return {
+            "status": "success",
+            "eagle_library": str(eagle_lib),
+            "total_matches": len(matches),
+            "returned": len(matches[:limit]),
+            "items": matches[:limit],
         }
